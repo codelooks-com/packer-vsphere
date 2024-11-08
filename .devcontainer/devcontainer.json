@@ -4,25 +4,27 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers/features/powershell:1": {},
-    "ghcr.io/devcontainers-contrib/features/ansible:2": {},
-    "ghcr.io/devcontainers-contrib/features/packer-asdf:2": {},
-    "ghcr.io/devcontainers-contrib/features/terraform-asdf:2": {},
-    "ghcr.io/gickis/devcontainer-features/gomplate:1": {}
+    "ghcr.io/devcontainers-extra/features/packer-asdf": "1.11.2",
+    "ghcr.io/devcontainers/features/powershell": "7.4.6",
+    "ghcr.io/devcontainers/features/terraform": "1.9.8",
+    "ghcr.io/gickis/devcontainer-features/gomplate": "4.1.0"
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "EditorConfig.EditorConfig",
-        "esbenp.prettier-vscode",
         "GitHub.remotehub",
         "GitHub.vscode-pull-request-github",
         "GitLab.gitlab-workflow",
+        "esbenp.prettier-vscode",
         "hashicorp.hcl",
         "hashicorp.terraform",
         "ms-vscode.powershell",
         "redhat.ansible",
-        "streetsidesoftware.code-spell-checker"
+        "streetsidesoftware.code-spell-checker",
+        "ms-vscode-remote.remote-containers",
+        "DavidAnson.vscode-markdownlint",
+        "marvhen.reflow-markdown"
       ]
     }
   }
