@@ -44,6 +44,8 @@ terraform.rc
 # Configurations
 ## Ignore default config directory.
 config/
+
+## Ignore configs
 pw-config/
 
 # Artifacts
