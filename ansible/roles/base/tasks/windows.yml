@@ -31,7 +31,6 @@
     - name: Installing additional packages using Chocolatey.
       chocolatey.chocolatey.win_chocolatey:
         name:
-          - googlechrome
           - putty
           - winscp
           - 7zip
