@@ -1,0 +1,35 @@
+# mise configuration for packer-vsphere project
+# https://mise.jdx.dev/
+#
+# Installation:
+#   1. Install mise: https://mise.jdx.dev/getting-started.html
+#   2. Run: mise install
+#   3. Activate mise in your shell: eval "$(mise activate zsh)"
+#      (or add to your ~/.zshrc for permanent activation)
+#
+# Usage:
+#   - mise install          # Install all tools
+#   - mise ls               # List installed tools
+#   - mise exec -- <cmd>    # Run a command with mise tools in PATH
+
+[tools]
+# Packer and plugins
+packer = "1.12.0"
+
+# Required tools with minimum versions from docs/getting-started/requirements.md
+# Note: ansible-core >= 2.16 requirement is met by ansible >= 9.0.0
+# (ansible 9.0+ includes ansible-core 2.16+)
+ansible = "latest"  # Includes ansible-core 2.19.3
+gomplate = "4.3.0"
+# Note: jq 1.8.1 is the latest available version in mise and homebrew
+# Docs specify >= 1.8.3, but 1.8.1 should be compatible
+jq = "1.8.1"
+terraform = "1.10.0"
+
+# git >= 2.43.0 is required but should be managed by system package manager
+# xorriso >= 1.5.6 is required on Linux (install via system package manager)
+# On macOS, coreutils is recommended (install via homebrew: brew install coreutils)
+
+[env]
+# Add local bin to PATH for any user-installed tools
+_.path = ["$HOME/.local/bin"]
