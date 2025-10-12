@@ -20,7 +20,7 @@ packer = "1.12.0"
 # Note: ansible-core >= 2.16 requirement is met by ansible >= 9.0.0
 # (ansible 9.0+ includes ansible-core 2.16+)
 ansible = "latest"  # Includes ansible-core 2.19.3
-gomplate = "4.3.0"
+gomplate = "4.3.3"
 # Note: jq 1.8.1 is the latest available version in mise and homebrew
 # Docs specify >= 1.8.3, but 1.8.1 should be compatible
 jq = "1.8.1"
