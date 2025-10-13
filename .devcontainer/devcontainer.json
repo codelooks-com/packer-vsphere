@@ -4,7 +4,7 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers-extra/features/packer-asdf": "1.11.2",
+    "ghcr.io/devcontainers-extra/features/packer-asdf": "1.12.0",
     "ghcr.io/devcontainers/features/powershell": "7.4.6",
     "ghcr.io/devcontainers/features/terraform": "1.9.8",
     "ghcr.io/gickis/devcontainer-features/gomplate": "4.1.0"
