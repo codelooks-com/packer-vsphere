@@ -14,7 +14,7 @@
 
 [tools]
 # Packer and plugins
-packer = "1.12.0"
+packer = "1.14.3"
 
 # Required tools with minimum versions from docs/getting-started/requirements.md
 # Note: ansible-core >= 2.16 requirement is met by ansible >= 9.0.0
