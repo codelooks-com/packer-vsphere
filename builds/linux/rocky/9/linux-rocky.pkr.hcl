@@ -49,7 +49,10 @@ locals {
   manifest_date   = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
   manifest_path   = "${path.cwd}/manifests/"
   manifest_output = "${local.manifest_path}${local.manifest_date}.json"
-  ovf_export_path = "${path.cwd}/artifacts/${local.vm_name}"
+  base_name           = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
+  vm_name             = "${local.base_name}-build"
+  content_library_item = local.base_name
+  ovf_export_path     = "${path.cwd}/artifacts/${local.content_library_item}"
   data_source_content = {
     "/ks.cfg" = templatefile("${abspath(path.root)}/data/ks.pkrtpl.hcl", {
       build_username           = var.build_username
@@ -76,7 +79,7 @@ locals {
     })
   }
   data_source_command = var.common_data_source == "http" ? "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg" : "inst.ks=cdrom:/ks.cfg"
-  vm_name             = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
+
   bucket_name         = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
   bucket_description  = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
@@ -171,6 +174,7 @@ source "vsphere-iso" "linux-rocky" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -183,7 +187,7 @@ source "vsphere-iso" "linux-rocky" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name
+      name        = local.content_library_item
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [

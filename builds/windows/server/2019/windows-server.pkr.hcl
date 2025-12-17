@@ -51,10 +51,18 @@ locals {
   manifest_path              = "${path.cwd}/manifests/"
   manifest_output            = "${local.manifest_path}${local.manifest_date}.json"
   ovf_export_path            = "${path.cwd}/artifacts/"
-  vm_name_datacenter_core    = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_core}-${local.build_version}"
-  vm_name_datacenter_desktop = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
-  vm_name_standard_core      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_core}-${local.build_version}"
-  vm_name_standard_desktop   = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
+  base_name_datacenter_core    = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_core}-${local.build_version}"
+  base_name_datacenter_desktop = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
+  base_name_standard_core      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_core}-${local.build_version}"
+  base_name_standard_desktop   = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
+  vm_name_datacenter_core      = "${local.base_name_datacenter_core}-build"
+  vm_name_datacenter_desktop   = "${local.base_name_datacenter_desktop}-build"
+  vm_name_standard_core        = "${local.base_name_standard_core}-build"
+  vm_name_standard_desktop     = "${local.base_name_standard_desktop}-build"
+  content_library_item_datacenter_core    = local.base_name_datacenter_core
+  content_library_item_datacenter_desktop = local.base_name_datacenter_desktop
+  content_library_item_standard_core      = local.base_name_standard_core
+  content_library_item_standard_desktop   = local.base_name_standard_desktop
   bucket_name                = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
   bucket_description         = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
@@ -147,6 +155,7 @@ source "vsphere-iso" "windows-server-standard-core" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_standard_core
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -159,13 +168,13 @@ source "vsphere-iso" "windows-server-standard-core" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_standard_core
+      name        = local.content_library_item_standard_core
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = "${local.ovf_export_path}/${local.vm_name_standard_core}"
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_standard_core}"
     }
   }
 }
@@ -256,6 +265,7 @@ source "vsphere-iso" "windows-server-standard-dexp" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_standard_desktop
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -268,13 +278,13 @@ source "vsphere-iso" "windows-server-standard-dexp" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_standard_desktop
+      name        = local.content_library_item_standard_desktop
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = "${local.ovf_export_path}/${local.vm_name_standard_desktop}"
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_standard_desktop}"
     }
   }
 }
@@ -367,6 +377,7 @@ source "vsphere-iso" "windows-server-datacenter-core" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_datacenter_core
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -379,13 +390,13 @@ source "vsphere-iso" "windows-server-datacenter-core" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_datacenter_core
+      name        = local.content_library_item_datacenter_core
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = "${local.ovf_export_path}/${local.vm_name_datacenter_core}"
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_datacenter_core}"
     }
   }
 }
@@ -476,6 +487,7 @@ source "vsphere-iso" "windows-server-datacenter-dexp" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_datacenter_desktop
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -488,13 +500,13 @@ source "vsphere-iso" "windows-server-datacenter-dexp" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_datacenter_desktop
+      name        = local.content_library_item_datacenter_desktop
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = "${local.ovf_export_path}/${local.vm_name_datacenter_desktop}"
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_datacenter_desktop}"
     }
   }
 }

@@ -51,8 +51,12 @@ locals {
   manifest_path      = "${path.cwd}/manifests/"
   manifest_output    = "${local.manifest_path}${local.manifest_date}.json"
   ovf_export_path    = "${path.cwd}/artifacts/"
-  vm_name_pro        = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_pro}-${local.build_version}"
-  vm_name_ent        = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_ent}-${local.build_version}"
+  base_name_pro      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_pro}-${local.build_version}"
+  base_name_ent      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_ent}-${local.build_version}"
+  vm_name_pro        = "${local.base_name_pro}-build"
+  vm_name_ent        = "${local.base_name_ent}-build"
+  content_library_item_pro = local.base_name_pro
+  content_library_item_ent = local.base_name_ent
   bucket_name        = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
   bucket_description = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
@@ -147,6 +151,7 @@ source "vsphere-iso" "windows-desktop-pro" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_pro
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -159,13 +164,13 @@ source "vsphere-iso" "windows-desktop-pro" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_pro
+      name        = local.content_library_item_pro
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = local.ovf_export_path
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_pro}"
     }
   }
 }
@@ -257,6 +262,7 @@ source "vsphere-iso" "windows-desktop-ent" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
+      name        = local.content_library_item_ent
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -269,13 +275,13 @@ source "vsphere-iso" "windows-desktop-ent" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.vm_name_ent
+      name        = local.content_library_item_ent
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
         "extraconfig"
       ]
-      output_directory = local.ovf_export_path
+      output_directory = "${local.ovf_export_path}/${local.content_library_item_ent}"
     }
   }
 }
