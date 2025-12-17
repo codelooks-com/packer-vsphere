@@ -32,6 +32,31 @@
                         "url": "https://debian.org"
                     },
                     "versions": {
+                        "13": [
+                            {
+                                "version": "13",
+                                "enabled": "true",
+                                "architectures": [
+                                    {
+                                        "architecture": "amd64",
+                                        "download_link": "https://cdimage.debian.org/cdimage/release/13.2.0/amd64/iso-cd/debian-13.2.0-amd64-netinst.iso",
+                                        "checksum_algorithm": "sha256",
+                                        "checksum": "https://cdimage.debian.org/cdimage/release/13.2.0/amd64/iso-cd/SHA256SUMS"
+                                    }
+                                ],
+                                "build_files": [
+                                    {
+                                        "vsphere": "vsphere.pkrvars.hcl",
+                                        "build": "build.pkrvars.hcl",
+                                        "ansible": "ansible.pkrvars.hcl",
+                                        "proxy": "proxy.pkrvars.hcl",
+                                        "common": "common.pkrvars.hcl",
+                                        "network": "network.pkrvars.hcl",
+                                        "storage": "linux-storage.pkrvars.hcl"
+                                    }
+                                ]
+                            }
+                        ],
                         "12": [
                             {
                                 "version": "12",
@@ -39,9 +64,9 @@
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-12.11.0-amd64-netinst.iso",
+                                        "download_link": "https://cdimage.debian.org/cdimage/archive/12.12.0/amd64/iso-cd/debian-12.12.0-amd64-netinst.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/SHA256SUMS"
+                                        "checksum": "https://cdimage.debian.org/cdimage/archive/12.12.0/amd64/iso-cd/SHA256SUMS"
                                     }
                                 ],
                                 "build_files": [
@@ -64,9 +89,9 @@
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://cdimage.debian.org/cdimage/archive/11.11.0/arm64/iso-cd/debian-11.11.0-arm64-netinst.iso",
+                                        "download_link": "https://cdimage.debian.org/cdimage/archive/11.11.0/amd64/iso-cd/debian-11.11.0-amd64-netinst.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://cdimage.debian.org/cdimage/archive/11.11.0/arm64/iso-cd/SHA256SUMS"
+                                        "checksum": "https://cdimage.debian.org/cdimage/archive/11.11.0/amd64/iso-cd/SHA256SUMS"
                                     }
                                 ],
                                 "build_files": [
@@ -162,7 +187,7 @@
                                     {
                                         "architecture": "amd64",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "febcc1359fd68faceff82d7eed8d21016e022a17e9c74e0e3f9dc3a78816b2bb"
+                                        "checksum": "aac774e5aba1c0275d50e0cc4e0e08eca660a116773280596e0bcb894d2da16d"
                                     }
                                 ],
                                 "build_files": [
@@ -222,9 +247,9 @@
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://download.rockylinux.org/pub/rocky/9.6/isos/x86_64/Rocky-9.6-x86_64-dvd.iso",
+                                        "download_link": "https://download.rockylinux.org/pub/rocky/9.7/isos/x86_64/Rocky-9.7-x86_64-dvd.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://download.rockylinux.org/pub/rocky/9.6/isos/x86_64/CHECKSUM"
+                                        "checksum": "https://download.rockylinux.org/pub/rocky/9.7/isos/x86_64/CHECKSUM"
                                     }
                                 ],
                                 "build_files": [
@@ -283,9 +308,9 @@
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://repo.almalinux.org/almalinux/9.6/isos/x86_64/AlmaLinux-9.6-x86_64-dvd.iso",
+                                        "download_link": "https://repo.almalinux.org/almalinux/9.7/isos/x86_64/AlmaLinux-9.7-x86_64-dvd.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://repo.almalinux.org/almalinux/9.6/isos/x86_64/CHECKSUM"
+                                        "checksum": "https://repo.almalinux.org/almalinux/9.7/isos/x86_64/CHECKSUM"
                                     }
                                 ],
                                 "build_files": [
@@ -344,9 +369,9 @@
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://yum.oracle.com/ISOS/OracleLinux/OL9/u6/x86_64/OracleLinux-R9-U6-x86_64-dvd.iso",
+                                        "download_link": "https://yum.oracle.com/ISOS/OracleLinux/OL9/u7/x86_64/OracleLinux-R9-U7-x86_64-dvd.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://linux.oracle.com/security/gpg/checksum/OracleLinux-R9-U6-Server-x86_64.checksum"
+                                        "checksum": "https://linux.oracle.com/security/gpg/checksum/OracleLinux-R9-U7-Server-x86_64.checksum"
                                     }
                                 ],
                                 "build_files": [
@@ -459,16 +484,16 @@
                         "url": "https://fedoraproject.org"
                     },
                     "versions": {
-                        "42": [
+                        "43": [
                             {
-                                "version": "42",
+                                "version": "43",
                                 "enabled": "true",
                                 "architectures": [
                                     {
                                         "architecture": "amd64",
-                                        "download_link": "https://mirror.cpsc.ucalgary.ca/mirror/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-dvd-x86_64-42-1.1.iso",
+                                        "download_link": "https://mirror.cpsc.ucalgary.ca/mirror/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-dvd-x86_64-43-1.6.iso",
                                         "checksum_algorithm": "sha256",
-                                        "checksum": "https://mirror.cpsc.ucalgary.ca/mirror/fedora/linux/releases/42/Server/x86_64/iso/Fedora-Server-42-1.1-x86_64-CHECKSUM"
+                                        "checksum": "https://mirror.cpsc.ucalgary.ca/mirror/fedora/linux/releases/43/Server/x86_64/iso/Fedora-Server-43-1.6-x86_64-CHECKSUM"
                                     }
                                 ],
                                 "build_files": [

@@ -4,7 +4,7 @@
 
 /*
     DESCRIPTION:
-    Oracle Linux 9 build definition.
+    Fedora Server 43 build definition.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 
@@ -84,7 +84,7 @@ locals {
 //  BLOCK: source
 //  Defines the builder configuration blocks.
 
-source "vsphere-iso" "linux-oracle" {
+source "vsphere-iso" "linux-fedora" {
 
   // vCenter Server Endpoint Settings and Credentials
   vcenter_server      = var.vsphere_endpoint
@@ -198,7 +198,7 @@ source "vsphere-iso" "linux-oracle" {
 //  Defines the builders to run, provisioners, and post-processors.
 
 build {
-  sources = ["source.vsphere-iso.linux-oracle"]
+  sources = ["source.vsphere-iso.linux-fedora"]
 
   provisioner "ansible" {
     user                   = var.build_username
@@ -208,7 +208,7 @@ build {
     roles_path             = "${path.cwd}/ansible/roles"
     ansible_env_vars = [
       "ANSIBLE_CONFIG=${path.cwd}/ansible/ansible.cfg",
-      "ANSIBLE_PYTHON_INTERPRETER=/usr/libexec/platform-python"
+      "ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3"
     ]
     extra_arguments = [
       "--extra-vars", "display_skipped_hosts=false",
