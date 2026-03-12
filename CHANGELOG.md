@@ -35,9 +35,9 @@
 - Updates the Terraform provider for VMware vSphere source from
   `hashicorp/vsphere` to `vmware/vsphere`. This aligns with the provider's
   updated namespace.
-  [#1101](https://github.com/vmware/packer-examples-for-vsphere/pull/1101)
-- Updates `required_plugins` for `packer-plugin-vsphere` to `>= 2.0.0`.
-  [#1077](https://github.com/vmware/packer-examples-for-vsphere/pull/1077)
+  [#1101](https://github.com/vmware/packer-examples-for-vsphere/pull/1104)
+- Updates `required_plugins` for `packer-plugin-vsphere` to `>= 2.1.1`.
+  [#1106](https://github.com/vmware/packer-examples-for-vsphere/pull/1106)
 - Updates `required_versions` for `packer-plugin-ansible` to >= `1.1.4`.
   [#1078](https://github.com/vmware/packer-examples-for-vsphere/pull/1078)
 - Updates `required_plugins` for `ethanmdavidson/packer-plugin-git` to
