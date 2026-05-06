@@ -152,4 +152,4 @@ for larger changes.
 [gh-markdown]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github
 [gh-pull-requests]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request
 [git-commit]: https://cbea.ms/git-commit
-[license]: LICENSE
+[license]: ../LICENSE

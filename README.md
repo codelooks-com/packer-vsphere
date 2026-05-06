@@ -32,13 +32,17 @@ This project supports the following guest operating systems:
 |                              | 11        |
 | Ubuntu Server                | 24.04 LTS |
 |                              | 22.04 LTS |
-| Red Hat Enterprise Linux     | 9         |
+| Red Hat Enterprise Linux     | 10        |
+|                              | 9         |
 |                              | 8         |
-| AlmaLinux OS                 | 9         |
+| AlmaLinux OS                 | 10        |
+|                              | 9         |
 |                              | 8         |
-| Rocky Linux                  | 9         |
+| Rocky Linux                  | 10        |
+|                              | 9         |
 |                              | 8         |
-| Oracle Linux                 | 9         |
+| Oracle Linux                 | 10        |
+|                              | 9         |
 |                              | 8         |
 | CentOS Stream                | 10        |
 |                              | 9         |
@@ -53,7 +57,6 @@ This project supports the following guest operating systems:
 |                          | 2022    | Standard and Datacenter     | Core and Desktop |
 |                          | 2019    | Standard and Datacenter     | Core and Desktop |
 | Microsoft Windows        | 11      | Professional and Enterprise | -                |
-|                          | 10      | Professional and Enterprise | -                |
 
 ## Documentation
 
@@ -61,7 +64,7 @@ Please refer to the [documentation][documentation] for more detailed information
 
 ## Contributing
 
-The project team welcomes contributions from the community. Please read our [Developer Certificate of Origin][vmware-cla-dco]. All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch.
+The project team welcomes contributions from the community. All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch.
 
 For more detailed information, refer to the [contribution guidelines][contributing] to get started.
 
@@ -97,10 +100,9 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 [//]: Links
-[contributing]: CONTRIBUTING.md
+[contributing]: .github/CONTRIBUTING.md
 [documentation]: https://vmware.github.io/packer-examples-for-vsphere
 [gh-issues]: https://github.com/vmware/packer-examples-for-vsphere/issues
 [gh-discussions]: https://github.com/vmware/packer-examples-for-vsphere/discussions
 [packer]: https://www.packer.io
-[packer-plugin-vsphere]: https://developer.hashicorp.com/packer/plugins/builders/vsphere/vsphere-iso
-[vmware-cla-dco]: https://cla.vmware.com/dco
+[packer-plugin-vsphere]: https://developer.hashicorp.com/packer/integrations/vmware/vsphere

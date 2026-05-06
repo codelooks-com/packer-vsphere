@@ -16,24 +16,27 @@ Download the guest operating system ISOs using the download script (`./download.
 |                                                             | 11        | :octicons-check-circle-16:{ .green }                                  |
 | :fontawesome-brands-ubuntu: Ubuntu Server @span             | 24.04     | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 22.04     | :octicons-check-circle-16:{ .green }                                  |
-| :fontawesome-brands-redhat: Red Hat Enterprise Linux @span  | 9         | :octicons-check-circle-16:{ .green }                                  |
+| :fontawesome-brands-redhat: Red Hat Enterprise Linux @span  | 10        | :octicons-x-circle-16:{ .red }                                        |
+|                                                             | 9         | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 8         | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 7         | :octicons-check-circle-16:{ .green }                                  |
-| :simple-almalinux: AlmaLinux OS @span                       | 9         | :octicons-check-circle-16:{ .green }                                  |
+| :simple-almalinux: AlmaLinux OS @span                       | 10        | :octicons-x-circle-16:{ .red }                                        |
+|                                                             | 9         | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 8         | :octicons-check-circle-16:{ .green }                                  |
-| :simple-rockylinux: Rocky Linux @span                       | 9         | :octicons-check-circle-16:{ .green }                                  |
+| :simple-rockylinux: Rocky Linux @span                       | 10        | :octicons-x-circle-16:{ .red }                                        |
+|                                                             | 9         | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 8         | :octicons-check-circle-16:{ .green }                                  |
-| :simple-oracle: Oracle Linux @span                          | 9         | :octicons-check-circle-16:{ .green }                                  |
+| :simple-oracle: Oracle Linux @span                          | 10        | :octicons-x-circle-16:{ .red }                                        |
+|                                                             | 9         | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 8         | :octicons-check-circle-16:{ .green }                                  |
 | :fontawesome-brands-centos: CentOS @span                    | 10 Stream | :octicons-check-circle-16:{ .green }                                  |
 |                                                             | 9 Stream  | :octicons-check-circle-16:{ .green }                                  |
-| :fontawesome-brands-fedora: Fedora Server* @span            | 42        | :octicons-check-circle-16:{ .green }                                  |
+| :fontawesome-brands-fedora: Fedora Server* @span            | 43        | :octicons-check-circle-16:{ .green }                                  |
 | :fontawesome-brands-suse: SUSE Linux Enterprise @span       | 15        | :octicons-x-circle-16:{ .red }                                        |
 | :fontawesome-brands-windows: Microsoft Windows Server @span | 2025      | :octicons-check-circle-16:{ .green } &nbsp; Windows Evaluation Center |
 |                                                             | 2022      | :octicons-check-circle-16:{ .green } &nbsp; Windows Evaluation Center |
 |                                                             | 2019      | :octicons-check-circle-16:{ .green } &nbsp; Windows Evaluation Center |
 | :fontawesome-brands-windows: Microsoft Windows @span        | 11        | :octicons-check-circle-16:{ .green } &nbsp; Windows Evaluation Center |
-|                                                             | 10        | :octicons-check-circle-16:{ .green } &nbsp; Windows Evaluation Center |
 ::end-spantable::
 
 ## Using the Download Script

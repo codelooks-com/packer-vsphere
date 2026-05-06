@@ -4,7 +4,7 @@
 
 /*
     DESCRIPTION:
-    Microsoft Windows 10 input variables.
+    Rocky Linux 9 input variables.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 
@@ -83,59 +83,18 @@ variable "vsphere_set_host_for_datastore_uploads" {
   default     = false
 }
 
-// Installer Settings
-
-variable "vm_inst_os_language" {
-  type        = string
-  description = "The installation operating system language."
-  default     = "en-US"
-}
-
-variable "vm_inst_os_keyboard" {
-  type        = string
-  description = "The installation operating system keyboard input."
-  default     = "en-US"
-}
-
-variable "vm_inst_os_eval" {
-  type        = bool
-  description = "Build using the operating system evaluation. Set to false for Professional Edition."
-  default     = true
-}
-
-variable "vm_inst_os_image_pro" {
-  type        = string
-  description = "The installation operating system image input. Does not support evaluation."
-  default     = "Windows 10 Pro"
-}
-
-variable "vm_inst_os_image_ent" {
-  type        = string
-  description = "The installation operating system image input. Does support evaluation."
-  default     = "Windows 10 Enterprise"
-}
-
-variable "vm_inst_os_key_pro" {
-  type        = string
-  description = "The installation operating system key input."
-}
-variable "vm_inst_os_key_ent" {
-  type        = string
-  description = "The installation operating system key input."
-}
-
 // Virtual Machine Settings
 
 variable "vm_guest_os_language" {
   type        = string
   description = "The guest operating system language."
-  default     = "en-US"
+  default     = "en_US"
 }
 
 variable "vm_guest_os_keyboard" {
   type        = string
   description = "The guest operating system keyboard input."
-  default     = "en-US"
+  default     = "us"
 }
 
 variable "vm_guest_os_timezone" {
@@ -147,31 +106,17 @@ variable "vm_guest_os_timezone" {
 variable "vm_guest_os_family" {
   type        = string
   description = "The guest operating system family. Used for naming and VMware Tools."
-  default     = "windows"
+  default     = "linux"
 }
 
 variable "vm_guest_os_name" {
   type        = string
   description = "The guest operating system name. Used for naming."
-  default     = "desktop"
 }
 
 variable "vm_guest_os_version" {
   type        = string
   description = "The guest operating system version. Used for naming."
-  default     = "10"
-}
-
-variable "vm_guest_os_edition_pro" {
-  type        = string
-  description = "The guest operating system edition. Used for naming."
-  default     = "pro"
-}
-
-variable "vm_guest_os_edition_ent" {
-  type        = string
-  description = "The guest operating system edition. Used for naming."
-  default     = "ent"
 }
 
 variable "vm_guest_os_type" {
@@ -179,10 +124,16 @@ variable "vm_guest_os_type" {
   description = "The guest operating system type, also know as guestid."
 }
 
+variable "vm_guest_os_cloudinit" {
+  type        = bool
+  description = "Enable cloud-init for the guest operating system."
+  default     = false
+}
+
 variable "vm_firmware" {
   type        = string
   description = "The virtual machine firmware."
-  default     = "efi-secure"
+  default     = "efi"
 }
 
 variable "vm_cdrom_type" {
@@ -206,7 +157,7 @@ variable "vm_cpu_count" {
 variable "vm_cpu_cores" {
   type        = number
   description = "The number of virtual CPUs cores per socket."
-  default     = 2
+  default     = 1
 }
 
 variable "vm_cpu_hot_add" {
@@ -218,7 +169,7 @@ variable "vm_cpu_hot_add" {
 variable "vm_mem_size" {
   type        = number
   description = "The size for the virtual memory in MB."
-  default     = 4096
+  default     = 2048
 }
 
 variable "vm_mem_hot_add" {
@@ -230,7 +181,7 @@ variable "vm_mem_hot_add" {
 variable "vm_disk_size" {
   type        = number
   description = "The size for the virtual disk in MB."
-  default     = 102400
+  default     = 40960
 }
 
 variable "vm_disk_controller_type" {
@@ -249,18 +200,6 @@ variable "vm_network_card" {
   type        = string
   description = "The virtual network card type."
   default     = "vmxnet3"
-}
-
-variable "vm_video_ram" {
-  type        = number
-  description = "The size for the video memory in KB."
-  default     = 4096
-}
-
-variable "vm_video_displays" {
-  type        = number
-  description = "The number of video displays."
-  default     = 1
 }
 
 variable "common_vm_version" {
@@ -406,18 +345,6 @@ variable "vm_boot_wait" {
   default     = "2s"
 }
 
-variable "vm_boot_command" {
-  type        = list(string)
-  description = "The virtual machine boot command."
-  default     = ["<spacebar>"]
-}
-
-variable "vm_shutdown_command" {
-  type        = string
-  description = "Command(s) for guest operating system shutdown."
-  default     = "shutdown /s /t 10 /f /d p:4:1 /c \"Shutdown by Packer\""
-}
-
 variable "common_ip_wait_timeout" {
   type        = string
   description = "Time to wait for guest operating system IP address response."
@@ -452,28 +379,49 @@ variable "build_password_encrypted" {
   type        = string
   description = "The SHA-512 encrypted password to login to the guest operating system."
   sensitive   = true
-  default     = ""
 }
 
 variable "build_key" {
   type        = string
   description = "The public key to login to the guest operating system."
   sensitive   = true
-  default     = ""
 }
 
-// Communicator Credentials
+variable "communicator_proxy_host" {
+  type        = string
+  description = "The proxy server to use for SSH connection. (Optional)"
+  default     = null
+}
+
+variable "communicator_proxy_port" {
+  type        = number
+  description = "The port to connect to the proxy server. (Optional)"
+  default     = null
+}
+
+variable "communicator_proxy_username" {
+  type        = string
+  description = "The username to authenticate with the proxy server. (Optional)"
+  default     = null
+}
+
+variable "communicator_proxy_password" {
+  type        = string
+  description = "The password to authenticate with the proxy server. (Optional)"
+  sensitive   = true
+  default     = null
+}
 
 variable "communicator_port" {
-  type        = number
+  type        = string
   description = "The port for the communicator protocol."
-  default     = 5985
+  default     = 22
 }
 
 variable "communicator_timeout" {
   type        = string
   description = "The timeout for the communicator protocol."
-  default     = "12h"
+  default     = "30m"
 }
 
 // Ansible Credentials
@@ -490,24 +438,17 @@ variable "ansible_key" {
   sensitive   = true
 }
 
-// Provisioner Settings
-
-variable "scripts" {
-  type        = list(string)
-  description = "A list of scripts and their relative paths to transfer and run."
-  default     = []
-}
-
-variable "inline" {
-  type        = list(string)
-  description = "A list of commands to run."
-  default     = []
-}
-
 // HCP Packer Settings
 
 variable "common_hcp_packer_registry_enabled" {
   type        = bool
   description = "Enable the HCP Packer registry."
   default     = false
+}
+// Additional Settings
+
+variable "additional_packages" {
+  type        = list(string)
+  description = "Additional packages to install."
+  default     = []
 }
