@@ -3,6 +3,8 @@
 # Renovate manages this digest.
 FROM ghcr.io/home-operations/actions-runner:2.335.1
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 USER root
 
 # OS packages Packer/ansible/CD-build need that aren't in mise:
@@ -46,4 +48,4 @@ RUN mise exec -- ansible-galaxy collection install -r /tmp/ansible/linux-require
 
 # Pre-install the Packer vSphere plugin so builds don't fetch it at runtime.
 COPY --chown=runner:runner packer.pkr.hcl* /tmp/pkr/
-RUN if [ -f /tmp/pkr/packer.pkr.hcl ]; then cd /tmp/pkr && mise exec -- packer init . || true; fi
+RUN if [ -f /tmp/pkr/packer.pkr.hcl ]; then mise exec -- packer init /tmp/pkr || true; fi

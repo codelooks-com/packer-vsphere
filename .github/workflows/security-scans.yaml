@@ -1,0 +1,26 @@
+---
+name: security-scans
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * *" # nightly at 3 AM UTC
+
+# Top-level: read-only by default. The reusable workflow widens per job.
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    permissions:
+      contents: read
+      security-events: write
+    uses: LukeEvansTech/shared-workflows/.github/workflows/security-scans.yml@2410829c6d03158086d6cab16e15153942c5d4b8 # v1
+    with:
+      # Packer/HCL repo: scan the runner Dockerfile and CI workflows, not k8s/helm.
+      checkov-frameworks: dockerfile,github_actions
