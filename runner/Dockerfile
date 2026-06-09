@@ -31,7 +31,8 @@ COPY --chown=runner:runner .mise.toml /home/runner/.config/mise/config.toml
 # github_token secret avoids anonymous GitHub API rate limits when mise
 # fetches release assets (aqua/gh backends). Empty/absent token still works.
 RUN --mount=type=secret,id=github_token,mode=0444 \
-    export GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+    GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+ && export GITHUB_TOKEN \
  && mise trust /home/runner/.config/mise/config.toml \
  && mise install \
  && mise reshim
@@ -53,5 +54,9 @@ RUN mise exec -- ansible-galaxy collection install -r /tmp/ansible/linux-require
 # Pre-install the Packer vSphere plugin so builds don't fetch it at runtime.
 COPY --chown=runner:runner packer.pkr.hcl* /tmp/pkr/
 RUN --mount=type=secret,id=github_token,mode=0444 \
-    export GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+    GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+ && export GITHUB_TOKEN \
  && if [ -f /tmp/pkr/packer.pkr.hcl ]; then mise exec -- packer init /tmp/pkr || true; fi
+
+# CLI/runner image — no service to probe. (Checkov CKV_DOCKER_2)
+HEALTHCHECK NONE
