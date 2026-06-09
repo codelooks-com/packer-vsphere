@@ -9,8 +9,8 @@ terraform {
       version = "~> 0.102.0"
     }
     vsphere = {
-      source  = "hashicorp/vsphere"
-      version = ">= 2.11.0"
+      source  = "vmware/vsphere"
+      version = ">= 2.15.0"
     }
   }
   required_version = ">= 1.10.0"

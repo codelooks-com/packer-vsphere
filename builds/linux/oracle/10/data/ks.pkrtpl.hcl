@@ -2,7 +2,7 @@
 # The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-2-Clause
 
-# Fedora Server 42
+# Oracle Linux Server 10
 
 ### Installs from the first attached CD-ROM/DVD on the system.
 cdrom
@@ -68,11 +68,7 @@ skipx
 
 ### Post-installation commands.
 %post
-dnf makecache
-dnf install -y sudo open-vm-tools perl python3-libselinux
-%{ if additional_packages != "" ~}
-dnf install -y ${additional_packages}
-%{ endif ~}
+dnf install -y sudo open-vm-tools perl
 echo "${build_username} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/${build_username}
 sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
 %end

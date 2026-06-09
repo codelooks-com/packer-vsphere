@@ -9,10 +9,10 @@ icon: octicons/verified-24
 The project is tested on the following platforms:
 
 ::spantable::
-| Platform        | Version               |
-| --------------- | --------------------- |
-| VMware vSphere  | 8.0 or later          |
-| VMware vSphere  | 7.0 Update 3D or later|
+| Platform        | Version                |
+| --------------- | ---------------------- |
+| VMware vSphere  | 9.0 or later           |
+| VMware vSphere  | 8.0 Update 3h or later |
 ::end-spantable::
 
 ## :octicons-stack-24: &nbsp; Operating Systems
@@ -20,21 +20,21 @@ The project is tested on the following platforms:
 The project is tested on the following operating systems for the Packer host [^1] :
 
 ::spantable::
-| Operating System   | Version   | Architecture           |
-| :----------------- | :-------- | :--------------------- |
-| VMware Photon OS   | 5.0       | `x86_64`               |
-| Ubuntu Server      | 22.04 LTS | `x86_64`               |
-| macOS              | Sonoma    | Intel or Apple Silicon |
+| Operating System   | Version | Architecture  |
+| :----------------- | :------ | :------------ |
+| VMware Photon OS   | 5.0     | `amd64`       |
+| Ubuntu Server      | 24.04   | `amd64`       |
+| macOS              | Tahoe   | `arm64`       |
 ::end-spantable::
 
 ## :simple-packer: &nbsp; Packer
 
 | Component                                                        | Version   | Description      | Resources                                                                                                               |
 | :--------------------------------------------------------------- | :-------- | :--------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| :simple-packer: &nbsp;&nbsp; Packer                              | >= 1.12.0 | By HashiCorp     | [:fontawesome-brands-github:][packer-repo] &nbsp;&nbsp; [:material-library:][packer]                                    |
-| :simple-hashicorp: &nbsp;&nbsp; Packer Plugin for Ansible        | >= 1.1.2  | By HashiCorp     | [:fontawesome-brands-github:][packer-plugin-ansible-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-ansible]      |
-| :simple-hashicorp: &nbsp;&nbsp; Packer Plugin for VMware vSphere | >= 1.4.2  | By HashiCorp     | [:fontawesome-brands-github:][packer-plugin-vsphere-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-vsphere-docs] |
-| :fontawesome-brands-git: &nbsp;&nbsp; Packer Plugin for Git      | >= 0.6.3  | Community Plugin | [:fontawesome-brands-github:][packer-plugin-git-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-git-docs]         |
+| :simple-packer: &nbsp;&nbsp; Packer                              | >= 1.15.0 | By HashiCorp     | [:fontawesome-brands-github:][packer-repo] &nbsp;&nbsp; [:material-library:][packer]                                    |
+| :simple-hashicorp: &nbsp;&nbsp; Packer Plugin for Ansible        | >= 1.1.4  | By HashiCorp     | [:fontawesome-brands-github:][packer-plugin-ansible-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-ansible]      |
+| :simple-hashicorp: &nbsp;&nbsp; Packer Plugin for VMware vSphere | >= 2.1.1  | By Broadcom      | [:fontawesome-brands-github:][packer-plugin-vsphere-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-vsphere-docs] |
+| :fontawesome-brands-git: &nbsp;&nbsp; Packer Plugin for Git      | >= 0.6.5  | Community Plugin | [:fontawesome-brands-github:][packer-plugin-git-repo] &nbsp;&nbsp; [:material-library:][packer-plugin-git-docs]         |
 
 ### Installation
 
@@ -43,7 +43,7 @@ The project is tested on the following operating systems for the Packer host [^1
     You can install Packer on VMware Photon OS using the following commands:
 
     ```shell
-    export PACKER_VERSION="1.12.0"
+    export PACKER_VERSION="1.15.0"
     export OS_PACKAGES="wget unzip"
 
     tdnf install ${OS_PACKAGES} -y
@@ -102,13 +102,13 @@ executable `/usr/local/bin` or `$HOME/.packer.d/plugins`.
 The following additional software packages must be installed on the operating system running Packer.
 
 | Package                                                | Version   | Description                                        | Resources                       |
-| :----------------------------------------------------- |:----------| :------------------------------------------------- | :------------------------------ |
+| :----------------------------------------------------- |:----------|:---------------------------------------------------| :------------------------------ |
 | :simple-ansible: &nbsp;&nbsp; ansible-core             | >= 2.16   | Automation engine for IT infrastructure            | [:material-library:][ansible]   |
 | :fontawesome-brands-git: &nbsp;&nbsp; git              | >= 2.43.0 | Version control system for tracking changes        | [:material-library:][git]       |
 | :material-code-braces: &nbsp;&nbsp; gomplate           | >= 4.3.0  | Template renderer                                  | [:material-library:][gomplate]  |
 | :simple-json: &nbsp;&nbsp; jq                          | >= 1.8.3  | Command-line JSON parser                           | [:material-library:][jq]        |
 | :simple-terraform: &nbsp;&nbsp; terraform              | >= 1.10.0 | Infrastructure as Code (IaC) tool by HashiCorp     | [:material-library:][terraform] |
-| :fontawesome-solid-compact-disc: &nbsp;&nbsp; xorriso  | >= 1.5.6  | ISO filesystem images creator for Linux             | [:material-library:][xorriso]   |
+| :fontawesome-solid-compact-disc: &nbsp;&nbsp; xorriso  | >= 1.5.6  | ISO filesystem images creator for Linux            | [:material-library:][xorriso]   |
 
 ### Installation
 
@@ -118,8 +118,6 @@ The following additional software packages must be installed on the operating sy
 
     ```shell
     tdnf -y install ansible git jq xorriso wget unzip
-    echo "ansible-core $(ansible --version | grep 'ansible.*core' | awk '{print $3}' | tr -d ']')"
-    echo "terraform $(terraform version | awk -Fv '{print $2}' | head -n 1)"
     export PATH="$HOME/.local/bin:$PATH"
     ```
 
@@ -149,8 +147,6 @@ The following additional software packages must be installed on the operating sy
     sudo apt install software-properties-common
     sudo add-apt-repository --yes --update ppa:ansible/ansible
     sudo apt install -y python3 python3-pip ansible git jq xorriso whois unzip terraform
-    echo "ansible-core $(ansible --version | grep 'ansible.*core' | awk '{print $3}' | tr -d ']')"
-    echo "terraform $(terraform version | awk -Fv '{print $2}' | head -n 1)"
     export PATH="$HOME/.local/bin:$PATH"
     ```
 
@@ -169,8 +165,6 @@ The following additional software packages must be installed on the operating sy
 
     ```shell
     brew install ansible git jq coreutils hashicorp/tap/terraform gomplate
-    echo "ansible-core $(ansible --version | grep 'ansible.*core' | awk '{print $3}' | tr -d ']')"
-    echo "terraform $(terraform version | awk -Fv '{print $2}' | head -n 1)"
     export PATH="$HOME/.local/bin:$PATH"
     ```
 
@@ -191,7 +185,7 @@ The following additional software packages must be installed on the operating sy
 [packer-plugin-ansible-repo]: https://github.com/hashicorp/packer-plugin-ansible
 [packer-plugin-git-docs]: https://developer.hashicorp.com/packer/integrations/ethanmdavidson/git
 [packer-plugin-git-repo]: https://github.com/ethanmdavidson/packer-plugin-git
-[packer-plugin-vsphere-docs]: https://developer.hashicorp.com/packer/plugins/builders/vsphere
-[packer-plugin-vsphere-repo]: https://github.com/hashicorp/packer-plugin-vsphere
+[packer-plugin-vsphere-docs]: https://developer.hashicorp.com/packer/integrations/vmware/vsphere
+[packer-plugin-vsphere-repo]: https://github.com/vmware/packer-plugin-vsphere
 [terraform]: https://developer.hashicorp.com/terraform
 [xorriso]: https://www.gnu.org/software/xorriso/

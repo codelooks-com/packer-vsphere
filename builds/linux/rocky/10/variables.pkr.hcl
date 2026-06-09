@@ -4,7 +4,7 @@
 
 /*
     DESCRIPTION:
-    Fedora Server 42 input variables.
+    Rocky Linux 9 input variables.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 
@@ -133,7 +133,7 @@ variable "vm_guest_os_cloudinit" {
 variable "vm_firmware" {
   type        = string
   description = "The virtual machine firmware."
-  default     = "efi-secure"
+  default     = "efi"
 }
 
 variable "vm_cdrom_type" {
@@ -413,7 +413,7 @@ variable "communicator_proxy_password" {
 }
 
 variable "communicator_port" {
-  type        = number
+  type        = string
   description = "The port for the communicator protocol."
   default     = 22
 }

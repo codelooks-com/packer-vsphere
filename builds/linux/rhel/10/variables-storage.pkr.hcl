@@ -1,10 +1,10 @@
 # © Broadcom. All Rights Reserved.
-# The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
+# The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-2-Clause
 
 /*
     DESCRIPTION:
-    Fedora Server 42 storage variables.
+    Red Hat Enterprise Linux 10 storage variables.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 

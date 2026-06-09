@@ -1,10 +1,10 @@
 # © Broadcom. All Rights Reserved.
-# The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
+# The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-2-Clause
 
 /*
     DESCRIPTION:
-    Fedora Server 42 build definition.
+    Red Hat Enterprise Linux 10 build definition.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 
@@ -12,19 +12,19 @@
 //  The Packer configuration.
 
 packer {
-  required_version = ">= 1.12.0"
+  required_version = ">= 1.15.0"
   required_plugins {
     vsphere = {
-      source  = "github.com/hashicorp/vsphere"
-      version = ">= 1.4.2"
+      source  = "github.com/vmware/vsphere"
+      version = ">= 2.1.1"
     }
     ansible = {
       source  = "github.com/hashicorp/ansible"
-      version = ">= 1.1.2"
+      version = ">= 1.1.4"
     }
     git = {
       source  = "github.com/ethanmdavidson/git"
-      version = ">= 0.6.3"
+      version = ">= 0.6.5"
     }
   }
 }
@@ -49,15 +49,14 @@ locals {
   manifest_date   = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
   manifest_path   = "${path.cwd}/manifests/"
   manifest_output = "${local.manifest_path}${local.manifest_date}.json"
-  base_name           = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
-  vm_name             = "${local.base_name}-build"
-  content_library_item = local.base_name
-  ovf_export_path     = "${path.cwd}/artifacts/${local.content_library_item}"
+  ovf_export_path = "${path.cwd}/artifacts/${local.vm_name}"
   data_source_content = {
     "/ks.cfg" = templatefile("${abspath(path.root)}/data/ks.pkrtpl.hcl", {
       build_username           = var.build_username
       build_password           = var.build_password
       build_password_encrypted = var.build_password_encrypted
+      rhsm_activation_key      = var.rhsm_activation_key
+      rhsm_organization        = var.rhsm_organization
       vm_guest_os_language     = var.vm_guest_os_language
       vm_guest_os_keyboard     = var.vm_guest_os_keyboard
       vm_guest_os_timezone     = var.vm_guest_os_timezone
@@ -78,16 +77,30 @@ locals {
       additional_packages = join(" ", var.additional_packages)
     })
   }
-  data_source_command = var.common_data_source == "http" ? "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg" : "inst.ks=cdrom:/ks.cfg"
-
-  bucket_name         = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
-  bucket_description  = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
+  http_ks_command = "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg"
+  http_ks_command_with_ip = format(
+    "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg ip=%s::%s:%s:hostname:%s:none",
+    var.vm_ip_address != null ? var.vm_ip_address : "",
+    var.vm_ip_gateway != null ? var.vm_ip_gateway : "",
+    var.vm_ip_netmask != null ? var.vm_ip_netmask : "",
+    var.vm_network_device
+  )
+  data_source_command = var.common_data_source == "http" ? (
+    var.vm_ip_address != null && var.vm_ip_gateway != null && var.vm_ip_netmask != null ?
+    local.http_ks_command_with_ip :
+    local.http_ks_command
+    ) : (
+    var.common_data_source == "disk" ? "inst.ks=cdrom:/ks.cfg" : ""
+  )
+  vm_name            = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
+  bucket_name        = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
+  bucket_description = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
 
 //  BLOCK: source
 //  Defines the builder configuration blocks.
 
-source "vsphere-iso" "linux-fedora" {
+source "vsphere-iso" "linux-rhel" {
 
   // vCenter Server Endpoint Settings and Credentials
   vcenter_server      = var.vsphere_endpoint
@@ -174,7 +187,6 @@ source "vsphere-iso" "linux-fedora" {
   dynamic "content_library_destination" {
     for_each = var.common_content_library_enabled ? [1] : []
     content {
-      name        = local.content_library_item
       library     = var.common_content_library
       description = local.build_description
       ovf         = var.common_content_library_ovf
@@ -187,7 +199,7 @@ source "vsphere-iso" "linux-fedora" {
   dynamic "export" {
     for_each = var.common_ovf_export_enabled ? [1] : []
     content {
-      name        = local.content_library_item
+      name        = local.vm_name
       force       = var.common_ovf_export_overwrite
       image_files = var.common_ovf_export_image_files
       options = [
@@ -202,7 +214,7 @@ source "vsphere-iso" "linux-fedora" {
 //  Defines the builders to run, provisioners, and post-processors.
 
 build {
-  sources = ["source.vsphere-iso.linux-fedora"]
+  sources = ["source.vsphere-iso.linux-rhel"]
 
   provisioner "ansible" {
     user                   = var.build_username
@@ -212,7 +224,7 @@ build {
     roles_path             = "${path.cwd}/ansible/roles"
     ansible_env_vars = [
       "ANSIBLE_CONFIG=${path.cwd}/ansible/ansible.cfg",
-      "ANSIBLE_PYTHON_INTERPRETER=/usr/bin/python3"
+      "ANSIBLE_PYTHON_INTERPRETER=/usr/libexec/platform-python"
     ]
     extra_arguments = [
       "--extra-vars", "display_skipped_hosts=false",
@@ -221,6 +233,8 @@ build {
       "--extra-vars", "ansible_username=${var.ansible_username}",
       "--extra-vars", "ansible_key='${var.ansible_key}'",
       "--extra-vars", "enable_cloudinit=${var.vm_guest_os_cloudinit}",
+      "--extra-vars", "rhsm_activation_key=${var.rhsm_activation_key}",
+      "--extra-vars", "rhsm_organization=${var.rhsm_organization}",
     ]
   }
 

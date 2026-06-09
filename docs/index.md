@@ -19,22 +19,27 @@ This project supports the following guest operating systems:
 | :---:                                                      |         | :---:                              | :---:                              | :---:                              | :---:                              |
 | :simple-broadcom: VMware Photon OS @span                   | 5.0     | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-x-circle-16:{.red}       |
 |                                                            | 4.0     | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-x-circle-16:{.red}       |
-| :fontawesome-brands-debian: Debian @span                   | 12      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :fontawesome-brands-debian: Debian @span                   | 13      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+|                                                            | 12      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 11      | :octicons-check-circle-16:{.green} | :octicons-x-circle-16:{.red}       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 | :fontawesome-brands-ubuntu: Ubuntu Server @span            | 24.04   | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 22.04   | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 20.04   | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
-| :fontawesome-brands-redhat: Red Hat Enterprise Linux @span | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :fontawesome-brands-redhat: Red Hat Enterprise Linux @span | 10      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+|                                                            | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 8       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
-| :simple-almalinux: AlmaLinux OS @span                      | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :simple-almalinux: AlmaLinux OS @span                      | 10      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+|                                                            | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 8       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
-| :simple-rockylinux: Rocky Linux @span                      | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :simple-rockylinux: Rocky Linux @span                      | 10      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+|                                                            | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 8       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
-| :simple-oracle: Oracle Linux @span                         | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :simple-oracle: Oracle Linux @span                         | 10      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+|                                                            | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 8       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 | :fontawesome-brands-centos: CentOS Stream @span            | 10      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 |                                                            | 9       | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
-| :fontawesome-brands-fedora: Fedora Server @span            | 42      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
+| :fontawesome-brands-fedora: Fedora Server @span            | 43      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} |
 | :fontawesome-brands-suse: SUSE Linux Enterprise @span      | 15      | :octicons-check-circle-16:{.green} | :octicons-check-circle-16:{.green} | :octicons-x-circle-16:{.red}       | :octicons-x-circle-16:{.red}       |
 ::end-spantable::
 
@@ -52,4 +57,4 @@ This project supports the following guest operating systems:
 
 [//]: Links
 [packer]: https://www.packer.io
-[packer-plugin-vsphere]: https://developer.hashicorp.com/packer/plugins/builders/vsphere/vsphere-iso
+[packer-plugin-vsphere]: https://developer.hashicorp.com/packer/integrations/vmware/vsphere

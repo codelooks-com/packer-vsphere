@@ -1,0 +1,13 @@
+---
+# Skip rules that flag patterns inherited from the upstream
+# (vmware/packer-examples-for-vsphere) ansible roles. Fixing these
+# in-place would create permanent merge conflicts against upstream.
+skip_list:
+  - line-length
+  - var-naming # role-prefix convention not followed in upstream roles
+  - ignore-errors # upstream uses ignore_errors deliberately for cleanup
+  - no-changed-when # upstream subscription/cloud-init command patterns
+  - risky-file-permissions
+  - fqcn # upstream uses short module names
+  - yaml # upstream YAML formatting
+  - schema # one upstream schema mismatch

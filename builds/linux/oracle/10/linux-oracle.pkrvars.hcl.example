@@ -4,22 +4,22 @@
 
 /*
     DESCRIPTION:
-    Fedora Server 42 build variables.
+    Oracle Linux 10 build variables.
     Packer Plugin for VMware vSphere: 'vsphere-iso' builder.
 */
 
 // Guest Operating System Metadata
-vm_guest_os_name    = "fedora"
-vm_guest_os_version = "42"
+vm_guest_os_name    = "oracle"
+vm_guest_os_version = "10.1"
 
 // Virtual Machine Guest Operating System Setting
-vm_guest_os_type      = "fedora64Guest"
-vm_guest_os_cloudinit = true
+vm_guest_os_type = "other6xLinux64Guest"
 
 // Virtual Machine Hardware Settings
 vm_firmware = "efi-secure"
 
 // Removable Media Settings
-iso_datastore_path       = "iso/linux/fedora-server/42/amd64"
-iso_content_library_item = "Fedora-Server-dvd-x86_64-42-1.1"
-iso_file                  = "Fedora-Server-dvd-x86_64-42-1.1.iso"
+iso_datastore_path       = "iso/linux/oracle-linux/10/amd64"
+iso_content_library_item = "OracleLinux-R10-U1-x86_64-dvd"
+iso_file                  = "OracleLinux-R10-U1-x86_64-dvd.iso"
+

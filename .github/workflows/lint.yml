@@ -2,38 +2,20 @@
 name: Lint
 
 on:
-  push:
   pull_request:
+  push:
+    branches: [develop]
   workflow_dispatch:
 
 permissions:
   contents: read
+  statuses: write
+  pull-requests: write
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          fetch-depth: 0
-      - name: Run GitHub Super-Linter
-        uses: github/super-linter@b807e99ddd37e444d189cfd2c2ca1274d8ae8ef1 # v7
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          DEFAULT_BRANCH: develop
-          DISABLE_ERRORS: false
-          FILTER_REGEX_EXCLUDE: build.tmpl
-          IGNORE_GITIGNORED_FILES: true
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_BASH: true
-          VALIDATE_BASH_EXEC: true
-          VALIDATE_DOCKERFILE_HADOLINT: true
-          DOCKERFILE_HADOLINT_FILE_NAME: .hadolint.yml
-          VALIDATE_GITHUB_ACTIONS: true
-          VALIDATE_NATURAL_LANGUAGE: true
-          VALIDATE_POWERSHELL: true
-          VALIDATE_TERRAFORM_FMT: true
-          VALIDATE_TERRAFORM_TFLINT: true
-          VALIDATE_YAML: true
-          YAML_CONFIG_FILE: .yamllint.yml
+    uses: LukeEvansTech/shared-workflows/.github/workflows/super-linter.yml@0939af8b6e27a3427fc3a59b3e7b07324fa508ad # v1
+    with:
+      default-branch: develop
+      soft-launch: false
+      filter-regex-exclude: '(^|/)(vendor|node_modules|\.terraform|\.venv|dist|build)/|.*\.tmpl$'

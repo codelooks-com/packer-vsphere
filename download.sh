@@ -337,7 +337,7 @@ select_version() {
     fi
 
     # Convert the version descriptions to an array and sort it in descending order.
-    IFS=$'\n' read -rd '' -a version_array <<<"$(echo "$version_descriptions" | sort -r)"
+    IFS=$'\n' read -rd '' -a version_array <<<"$(echo "$version_descriptions" | sort -V -r)"
 
     # Print the submenu.
     clear
@@ -424,7 +424,7 @@ select_download() {
     if [[ "$dist" == *"Windows"* ]]; then
         download_link=$(jq -r --arg os "$os" --arg dist "$dist" --arg version "$version" --arg arch "$arch" '.os[] | select(.name == $os) | .types[] | select(.description == $dist) | .versions[$version][] | .architectures[] | select(.architecture == $arch) | .download_link' $json_path)
         # Validate the download link
-        if curl --output /dev/null --silent --head --fail "$download_link"; then
+        if curl -L --output /dev/null --silent --head --fail "$download_link"; then
             download_dir="$(echo "${iso_base_path}/${os}/${dist}/${version}/${arch}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
         else
             printf "\n\n"
@@ -434,7 +434,13 @@ select_download() {
         fi
         mkdir -p "$download_dir"
 
-        file_name=$(basename "$download_link")
+        # Check if a custom filename is provided in the JSON; otherwise, extract from URL.
+        custom_filename=$(jq -r --arg os "$os" --arg dist "$dist" --arg version "$version" --arg arch "$arch" '.os[] | select(.name == $os) | .types[] | select(.description == $dist) | .versions[$version][] | .architectures[] | select(.architecture == $arch) | .filename // empty' $json_path)
+        if [ -n "$custom_filename" ]; then
+            file_name="$custom_filename"
+        else
+            file_name=$(basename "$download_link")
+        fi
         full_path="$download_dir/$file_name"
 
         # Check if iso file exists in the download directory.
@@ -469,7 +475,7 @@ select_download() {
 
         # Set the download command based on the availability of curl or wget.
         if command -v curl >/dev/null 2>&1; then
-            download_command="curl -o"
+            download_command="curl -L -o"
         elif command -v wget >/dev/null 2>&1; then
             download_command="wget -q -O "
         fi
@@ -579,7 +585,7 @@ select_download() {
 
         # Set the download command based on the availability of curl or wget.
         if command -v curl >/dev/null 2>&1; then
-            download_command="curl -o"
+            download_command="curl -L -o"
         elif command -v wget >/dev/null 2>&1; then
             download_command="wget -q -O"
         fi
@@ -599,7 +605,7 @@ select_download() {
         dist_name=$(jq -r --arg os "$os" --arg desc "$description" '.os[] | select(.name == $os) | .distributions[] | select(.description == $desc) | .name' $json_path)
         download_link=$(jq -r --arg os "$os" --arg dist "$dist" --arg version "$version" --arg arch "$arch" '.os[] | select(.name == $os) | .distributions[] | select(.description == $dist) | .versions | to_entries[] | .value[] | select(.version == $version) | .architectures[] | select(.architecture == $arch) | .download_link' $json_path)
         # Validate the download link
-        if curl --output /dev/null --silent --head --fail "$download_link"; then
+        if curl -L --output /dev/null --silent --head --fail "$download_link"; then
             download_dir="$(echo "${iso_base_path}/${os}/${dist}/${version}/${arch}" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
         else
             printf "\n"
@@ -645,7 +651,7 @@ select_download() {
 
         # Set the download command based on the availability of curl or wget.
         if command -v curl >/dev/null 2>&1; then
-            download_command="curl -o"
+            download_command="curl -L -o"
         elif command -v wget >/dev/null 2>&1; then
             download_command="wget -q -O"
         fi
@@ -716,7 +722,7 @@ download_checksum_file() {
         # Set the download command based on the availability of curl or wget.
         download_command=""
         if command -v curl >/dev/null 2>&1; then
-            download_command="curl -o"
+            download_command="curl -L -o"
         elif command -v wget >/dev/null 2>&1; then
             download_command="wget -q -O "
         fi
