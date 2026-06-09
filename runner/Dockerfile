@@ -28,7 +28,11 @@ ENV MISE_DATA_DIR=/home/runner/.local/share/mise \
 # Install mise, then resolve the pinned toolchain from the repo's .mise.toml.
 RUN curl -fsSL https://mise.run | sh
 COPY --chown=runner:runner .mise.toml /home/runner/.config/mise/config.toml
-RUN mise trust /home/runner/.config/mise/config.toml \
+# github_token secret avoids anonymous GitHub API rate limits when mise
+# fetches release assets (aqua/gh backends). Empty/absent token still works.
+RUN --mount=type=secret,id=github_token,mode=0444 \
+    export GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+ && mise trust /home/runner/.config/mise/config.toml \
  && mise install \
  && mise reshim
 
@@ -48,4 +52,6 @@ RUN mise exec -- ansible-galaxy collection install -r /tmp/ansible/linux-require
 
 # Pre-install the Packer vSphere plugin so builds don't fetch it at runtime.
 COPY --chown=runner:runner packer.pkr.hcl* /tmp/pkr/
-RUN if [ -f /tmp/pkr/packer.pkr.hcl ]; then mise exec -- packer init /tmp/pkr || true; fi
+RUN --mount=type=secret,id=github_token,mode=0444 \
+    export GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" \
+ && if [ -f /tmp/pkr/packer.pkr.hcl ]; then mise exec -- packer init /tmp/pkr || true; fi
