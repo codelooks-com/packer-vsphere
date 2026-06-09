@@ -1,0 +1,7 @@
+---
+# Trivy ignore file consumed by the shared security-scans workflow.
+# No suppressions currently — add entries with an expiry + justification.
+vulnerabilities: []
+misconfigurations: []
+secrets: []
+licenses: []
