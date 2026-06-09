@@ -9,14 +9,14 @@ USER root
 #  - xorriso: ISO generation for cd_content/removable media on Linux
 #  - genisoimage: fallback ISO tooling
 #  - openssh-client: SSH provisioning to Linux build VMs
-#  - python3/python3-pip/python3-venv: interpreter + venv support for the
-#    mise-managed ansible-core install
+#  - python3/python3-pip/python3-venv/pipx: interpreter + venv support for the
+#    mise-managed ansible-core install (mise's pipx backend execs the pipx binary)
 #  - sshpass: password SSH used by some build flows
 #  - ca-certificates, curl, git, unzip: tool bootstrap
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       xorriso genisoimage openssh-client sshpass \
-      python3 python3-pip python3-venv ca-certificates curl git unzip \
+      python3 python3-pip python3-venv pipx ca-certificates curl git unzip \
  && rm -rf /var/lib/apt/lists/*
 
 USER runner
