@@ -1,0 +1,49 @@
+---
+# Temporary platform acceptance test for the in-cluster packer-vsphere runner.
+# Removed in Plan 2 once a real build workflow supersedes it.
+name: runner-smoke
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: packer-vsphere
+    steps:
+      - name: Tools present
+        run: |
+          set -euo pipefail
+          packer version
+          ansible --version | head -1
+          govc version
+          goss --version
+          jq --version
+          xorriso --version 2>&1 | head -1
+          # Check winrm against ansible's OWN interpreter (the mise/pipx venv) —
+          # the system python3 is NOT what ansible runs under. Must use
+          # `mise which` — `command -v` returns the mise SHIM (a binary with no
+          # shebang), which makes the sed come back empty (verified 2026-06-09).
+          "$(sed -n '1s/^#!//p' "$(mise which ansible)")" -c "import winrm; print('pywinrm ok')"
+
+      - name: PKR_VAR env present (values masked)
+        run: |
+          set -euo pipefail
+          for v in PKR_VAR_vsphere_endpoint PKR_VAR_vsphere_username \
+                   PKR_VAR_vsphere_datacenter PKR_VAR_build_username; do
+            if [ -z "${!v:-}" ]; then echo "MISSING $v"; exit 1; fi
+            echo "$v is set"
+          done
+
+      - name: Reach vCenter API (443)
+        run: |
+          set -euo pipefail
+          # govc confirms a real TLS/API handshake, not just an open port.
+          # Creds via GOVC_USERNAME/GOVC_PASSWORD (NOT embedded in the URL —
+          # avoids URL-encoding issues and leaking the password in error output).
+          GOVC_URL="https://${PKR_VAR_vsphere_endpoint}" \
+          GOVC_USERNAME="${PKR_VAR_vsphere_username}" \
+          GOVC_PASSWORD="${PKR_VAR_vsphere_password}" \
+          GOVC_INSECURE=true govc about
