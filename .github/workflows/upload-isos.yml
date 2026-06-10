@@ -1,0 +1,49 @@
+---
+name: upload-isos
+
+# The 'os' input is a fixed-set choice kept in sync with ci/matrix.json keys.
+# An unrecognised key causes the upload script to error and exit non-zero.
+# checkov CKV_GHA_7 fires on any non-empty workflow_dispatch inputs block; this
+# workflow intentionally restricts inputs to a predefined choice list (not free
+# text) so the skip is correct.  build-templates.yml has the same pattern but
+# is silently excluded from Checkov's github_actions scan because its
+# fromJson()/matrix strategy fails the bundled jsonschema validation.
+on: # checkov:skip=CKV_GHA_7: fixed-set choice input; not a free-text injection risk
+  workflow_dispatch:
+    inputs:
+      os:
+        description: "OS line key from ci/matrix.json, or all (keep in sync with matrix keys)"
+        type: choice
+        default: all
+        options:
+          - all
+          - ubuntu-2404
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-isos
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: packer-vsphere
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download, verify, and upload ISOs
+        env:
+          SELECTED: ${{ github.event.inputs.os }}
+        run: |
+          set -euo pipefail
+          export GOVC_URL="https://${PKR_VAR_vsphere_endpoint}"
+          export GOVC_USERNAME="${PKR_VAR_vsphere_username}"
+          export GOVC_PASSWORD="${PKR_VAR_vsphere_password}"
+          export GOVC_INSECURE="${PKR_VAR_vsphere_insecure_connection:-true}"
+          export GOVC_DATACENTER="${PKR_VAR_vsphere_datacenter}"
+          bash ci/scripts/upload-isos.sh "$SELECTED"
