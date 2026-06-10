@@ -23,8 +23,8 @@ Constraints: SSO policy (domain `core.codelooks.com`) — max 20 chars, needs
 upper/lower/digit/special.
 
 ```bash
-# generate (20 chars, policy-safe) and store; never printed
-NEW_PW="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 17)!Aa1"
+# generate (16 chars + 4-char suffix = 20, policy-safe); never printed
+NEW_PW="$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 16)!Aa1"
 export GOVC_URL="https://$(op read 'op://Talos/vsphere-packer/VSPHERE_ENDPOINT')"
 export GOVC_USERNAME="$(op read 'op://Talos/vsphere-packer/VSPHERE_USERNAME')"
 export GOVC_PASSWORD="$(op read 'op://Talos/vsphere-packer/VSPHERE_PASSWORD')"
@@ -80,7 +80,7 @@ Web actions (the `gh` token lacks `admin:org`):
 op item get github-codelooks --vault Talos --format json \
   | jq -r '.fields[].label'
 op item edit github-codelooks --vault Talos \
-  "private-key=$(cat ~/Downloads/codelooks-arc-runner.*.private-key.pem)"
+  "ACTIONS_RUNNER_PRIVATE_KEY=$(cat ~/Downloads/codelooks-arc-runner.*.private-key.pem)"
 ```
 
 1. Force-sync the runner-registration ExternalSecret:
