@@ -15,6 +15,7 @@ on:
         options:
           - all
           - ubuntu-2404
+          - ubuntu-2204
 
 permissions:
   contents: read
