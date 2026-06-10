@@ -1,0 +1,48 @@
+---
+name: check-iso-updates
+
+# Weekly point-release detector for the free Linux distros. Opens a PR
+# bumping iso_url/sums_url (ci/matrix.json) + iso_file (ci/config). Human
+# merge is the gate; after merging, dispatch upload-isos for the bumped
+# line(s) so the next weekly build finds the new ISO on the datastore.
+#
+# Known limitation: PRs opened with the default GITHUB_TOKEN do not
+# trigger PR-check workflows — close and reopen the PR (or push to its
+# branch) to run lint/validate before merging.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # persist-credentials stays default-true: the push below needs it.
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Detect point releases
+        run: python3 ci/scripts/check_iso_updates.py
+
+      - name: Open bump PR if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No ISO bumps."
+            exit 0
+          fi
+          branch="iso-bumps/${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add ci/matrix.json ci/config
+          git commit -m "chore(iso): bump ISO point releases"
+          git push -u origin "$branch"
+          gh pr create --repo "${{ github.repository }}" \
+            --title "chore(iso): bump ISO point releases" \
+            --body "Automated point-release bump from check-iso-updates. After merging, dispatch upload-isos for the affected line(s). Close/reopen this PR to trigger checks."
