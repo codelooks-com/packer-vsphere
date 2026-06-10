@@ -40,15 +40,19 @@ jobs:
             echo "No ISO bumps."
             exit 0
           fi
-          # Stable branch + force-with-lease: repeated runs with an unmerged
-          # bump update ONE branch/PR instead of accumulating duplicates.
+          # Stable branch + force push: repeated runs with an unmerged bump
+          # update ONE branch/PR instead of accumulating duplicates. Plain
+          # --force is safe here: the branch is bot-owned and always rebuilt
+          # from the freshly checked-out default branch (--force-with-lease
+          # cannot work under checkout@v4's single-branch fetch — no
+          # tracking ref to lease against).
           branch="iso-bumps/auto"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branch"
           git add ci/matrix.json ci/config/*.pkrvars.hcl
           git commit -m "chore(iso): bump ISO point releases"
-          git push --force-with-lease origin "$branch"
+          git push --force origin "$branch"
           if [ -n "$(gh pr list --repo "${{ github.repository }}" --head "$branch" --state open --json number --jq '.[].number')" ]; then
             echo "Open bump PR already exists for $branch — branch updated."
             exit 0
