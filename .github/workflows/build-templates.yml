@@ -36,6 +36,17 @@ jobs:
           set -euo pipefail
           ./build.sh --ci --os Linux --dist "Ubuntu Server" --version "24.04" "$GITHUB_WORKSPACE/ci/config"
 
+      # upload-artifact v4 rejects ':' in file paths, and the engine names
+      # manifests with a 'YYYY-MM-DD hh:mm:ss' timestamp — rename first.
+      - name: Rename manifests for artifact upload
+        if: always()
+        run: |
+          set -euo pipefail
+          for f in manifests/*.json; do
+            [ -e "$f" ] || continue
+            mv "$f" "${f//[ :]/-}"
+          done
+
       # Manifests contain only non-sensitive build metadata — safe to retain.
       - name: Upload build manifest
         if: always()

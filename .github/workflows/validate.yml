@@ -6,6 +6,8 @@ on:
     paths:
       - builds/**
       - ci/config/**
+      - build.sh
+      - project.json
       - .github/workflows/validate.yml
 
 permissions:
