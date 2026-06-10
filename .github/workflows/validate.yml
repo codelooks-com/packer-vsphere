@@ -46,6 +46,10 @@ jobs:
       - name: Packer fmt
         run: |
           set -euo pipefail
+          # Fail closed: a malformed matrix or zero enabled entries must fail
+          # the check, not silently validate nothing (process substitution
+          # discards jq's exit status).
+          jq -e 'type=="array" and ([.[] | select(.enabled)] | length > 0)' ci/matrix.json >/dev/null
           packer fmt -check -recursive ci/config
           while IFS= read -r dir; do
             packer fmt -check -recursive "$dir"
@@ -54,6 +58,10 @@ jobs:
       - name: Packer validate (all enabled matrix lines)
         run: |
           set -euo pipefail
+          # Fail closed: a malformed matrix or zero enabled entries must fail
+          # the check, not silently validate nothing (process substitution
+          # discards jq's exit status).
+          jq -e 'type=="array" and ([.[] | select(.enabled)] | length > 0)' ci/matrix.json >/dev/null
           while IFS=$'\t' read -r dir cfg; do
             echo "::group::validate ${dir}"
             packer init "$dir"
