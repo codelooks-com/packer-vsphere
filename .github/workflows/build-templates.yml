@@ -13,6 +13,11 @@ concurrency:
   group: build-templates
   cancel-in-progress: false
 
+# Cancellation note: -on-error=cleanup covers packer-detected failures but
+# NOT workflow cancellation (SIGTERM) — a cancelled run can leave a
+# 'linux-ubuntu-24.04-lts-*' VM behind. The next run's -force (build.sh)
+# deletes the same-named VM at build start; manual govc cleanup also works.
+
 jobs:
   ubuntu-2404:
     runs-on: packer-vsphere
@@ -27,15 +32,49 @@ jobs:
           persist-credentials: false
 
       - name: Build Ubuntu Server 24.04 LTS
-        run: ./build.sh --ci --os Linux --dist "Ubuntu Server" --version "24.04" "$GITHUB_WORKSPACE/ci/config"
+        run: |
+          set -euo pipefail
+          ./build.sh --ci --os Linux --dist "Ubuntu Server" --version "24.04" "$GITHUB_WORKSPACE/ci/config"
 
-      - name: Upload build evidence
+      # Manifests contain only non-sensitive build metadata — safe to retain.
+      - name: Upload build manifest
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ubuntu-2404-build
-          path: |
-            packer-build.log
-            manifests/*.json
+          path: manifests/*.json
           if-no-files-found: warn
           retention-days: 14
+
+      # PACKER_LOG=1 plugin debug traces can carry secrets the console
+      # masking never sees (e.g. the interpolated shutdown_command) — and
+      # artifacts on a public repo are downloadable by any authenticated
+      # GitHub user. Redact every sensitive PKR_VAR_* value before upload,
+      # and upload the log only when the build failed (triage-only).
+      - name: Scrub secrets from debug log
+        if: failure()
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib
+          p = pathlib.Path("packer-build.log")
+          if p.exists():
+              data = p.read_text(errors="replace")
+              for k, v in os.environ.items():
+                  lk = k.lower()
+                  if k.startswith("PKR_VAR_") and v and ("password" in lk or "key" in lk):
+                      data = data.replace(v, f"[REDACTED:{k}]")
+              p.write_text(data)
+              print("scrubbed", p)
+          else:
+              print("no packer-build.log to scrub")
+          PY
+
+      - name: Upload debug log (failures only)
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-2404-build-debug-log
+          path: packer-build.log
+          if-no-files-found: warn
+          retention-days: 7
