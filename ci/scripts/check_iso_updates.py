@@ -53,9 +53,8 @@ def latest_dir_listing(entry: dict) -> tuple[str, str]:
     found = set(re.findall(disc["dir_pattern"], body))
     versions = {v for v in found if all(p.isdigit() for p in v.split("."))}
     if not versions:
-        raise RuntimeError(
-            f"{entry['key']}: no numeric version dirs match {disc['dir_pattern']!r} (raw matches: {sorted(found)!r})"
-        )
+        msg = f"{entry['key']}: no dirs match {disc['dir_pattern']!r}; found: {sorted(found)!r}"
+        raise RuntimeError(msg)
     newest = max(versions, key=lambda v: tuple(int(p) for p in v.split(".")))
     return (
         disc["url_template"].format(ver=newest),
