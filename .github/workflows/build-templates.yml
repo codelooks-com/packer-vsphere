@@ -1,27 +1,70 @@
 ---
 name: build-templates
 
+# Matrix legs come from ci/matrix.json (single source of truth for OS
+# lines). base_name values embed the '-main' branch suffix because builds
+# only run from main.
+# (the dispatch 'options' list below must be kept in sync by hand — GitHub cannot populate choice inputs dynamically).
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      os:
+        description: "OS line to build (key from ci/matrix.json)"
+        type: choice
+        default: all
+        options:
+          - all
+          - ubuntu-2404
 
 permissions:
   contents: read
 
-# Date-stamp-free engine naming means two concurrent runs would race to
-# create the same VM name — serialize.
+# Date-stamp-free engine naming means two concurrent RUNS would race to
+# create the same VM name — serialize runs. Legs within one run build
+# different names, so the matrix itself may parallelize.
 concurrency:
   group: build-templates
   cancel-in-progress: false
 
 # Cancellation note: -on-error=cleanup covers packer-detected failures but
 # NOT workflow cancellation (SIGTERM) — a cancelled run can leave a
-# 'linux-ubuntu-24.04-lts-*' VM behind. The next run's -force (build.sh)
-# deletes the same-named VM at build start; manual govc cleanup also works.
+# '<base>-build' VM behind. The next run's -force (build.sh) deletes the
+# same-named VM at build start; manual govc cleanup also works.
 
 jobs:
-  ubuntu-2404:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Select matrix legs
+        id: plan
+        env:
+          SELECTED: ${{ github.event.inputs.os || 'all' }}
+        run: |
+          set -euo pipefail
+          matrix="$(jq -c --arg sel "$SELECTED" \
+            '[ .[] | select(.enabled and ($sel == "all" or .key == $sel)) ]' \
+            ci/matrix.json)"
+          test "$(jq 'length' <<<"$matrix")" -gt 0
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
     runs-on: packer-vsphere
     timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      # Scale set maxRunners is 3 — leave one slot free for ad-hoc jobs.
+      max-parallel: 2
+      matrix:
+        include: ${{ fromJson(needs.plan.outputs.matrix) }}
+    name: build (${{ matrix.key }})
     env:
       PACKER_LOG: "1"
       PACKER_LOG_PATH: ${{ github.workspace }}/packer-build.log
@@ -31,10 +74,52 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Build Ubuntu Server 24.04 LTS
+      - name: Build ${{ matrix.dist }} ${{ matrix.version }}
+        env:
+          BUILD_OS: ${{ matrix.os }}
+          BUILD_DIST: ${{ matrix.dist }}
+          BUILD_VERSION: ${{ matrix.version }}
         run: |
           set -euo pipefail
-          ./build.sh --ci --os Linux --dist "Ubuntu Server" --version "24.04" "$GITHUB_WORKSPACE/ci/config"
+          ./build.sh --ci --os "$BUILD_OS" --dist "$BUILD_DIST" \
+            --version "$BUILD_VERSION" "$GITHUB_WORKSPACE/ci/config"
+
+      # Swap the freshly converted '<base>-build' template into the stable
+      # name Terraform clones (<base>), keeping exactly one rollback
+      # generation (<base>-prev). Success-only: a failed build can never
+      # touch the stable template. Each rename is conditional on what
+      # exists, so a crash mid-swap self-heals on the next successful run.
+      - name: Promote template (-prev swap)
+        env:
+          BASE_NAME: ${{ matrix.base_name }}
+        run: |
+          set -euo pipefail
+          export GOVC_URL="https://${PKR_VAR_vsphere_endpoint}"
+          export GOVC_USERNAME="${PKR_VAR_vsphere_username}"
+          export GOVC_PASSWORD="${PKR_VAR_vsphere_password}"
+          export GOVC_INSECURE="${PKR_VAR_vsphere_insecure_connection:-true}"
+          export GOVC_DATACENTER="${PKR_VAR_vsphere_datacenter}"
+          folder="/${PKR_VAR_vsphere_datacenter}/vm/${PKR_VAR_vsphere_folder}"
+          govc version
+          # Guard before mutating anything: if the freshly built template is
+          # missing, fail cleanly with the stable <base> still in place.
+          # (govc ls on a missing path prints nothing and exits 0 — the
+          # emptiness checks below are load-bearing.)
+          if [ -z "$(govc ls "${folder}/${BASE_NAME}-build")" ]; then
+            echo "ERROR: ${BASE_NAME}-build not found — nothing to promote" >&2
+            exit 1
+          fi
+          # First run for a new OS line: neither <base> nor <base>-prev
+          # exists yet; both conditionals no-op and the rename below is all
+          # that happens.
+          if [ -n "$(govc ls "${folder}/${BASE_NAME}-prev")" ]; then
+            govc vm.destroy "${folder}/${BASE_NAME}-prev"
+          fi
+          if [ -n "$(govc ls "${folder}/${BASE_NAME}")" ]; then
+            govc object.rename "${folder}/${BASE_NAME}" "${BASE_NAME}-prev"
+          fi
+          govc object.rename "${folder}/${BASE_NAME}-build" "${BASE_NAME}"
+          govc vm.info "${folder}/${BASE_NAME}"
 
       # upload-artifact v4 rejects ':' in file paths, and the engine names
       # manifests with a 'YYYY-MM-DD hh:mm:ss' timestamp — rename first.
@@ -52,7 +137,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ubuntu-2404-build
+          name: ${{ matrix.key }}-build
           path: manifests/*.json
           if-no-files-found: warn
           retention-days: 14
@@ -88,7 +173,7 @@ jobs:
         if: failure() && steps.scrub.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: ubuntu-2404-build-debug-log
+          name: ${{ matrix.key }}-build-debug-log
           path: packer-build.log
           if-no-files-found: warn
           retention-days: 7
