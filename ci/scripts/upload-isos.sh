@@ -48,17 +48,23 @@ while IFS= read -r entry; do
   curl -fL --retry 3 -o "${tmpdir}/${file}" "$iso_url"
 
   # SUMS formats: coreutils "<hash>  <file>" (ubuntu/debian, file may be
-  # *-prefixed) and BSD "SHA256 (<file>) = <hash>" (rocky/alma CHECKSUM).
+  # *-prefixed) and BSD "SHA256 (<file>) = <hash>" (rocky/alma CHECKSUM —
+  # algorithm-anchored: EL CHECKSUM files may list several algorithms).
   expected="$(curl -fL --retry 3 "$sums_url" | awk -v f="$file" \
-    '($2 == "(" f ")") {print $4} ($2 == f || $2 == "*" f) {print $1}' | head -n 1)"
+    '($1 == "SHA256" && $2 == "(" f ")") {print $4} ($2 == f || $2 == "*" f) {print $1}' | head -n 1)"
   if [ -z "$expected" ]; then
     echo "ERROR: ${file} not found in ${sums_url}" >&2
     exit 1
   fi
   echo "${expected}  ${tmpdir}/${file}" | sha256sum -c -
 
+  # Upload to a temp name, then rename into place (a same-datastore mv is a
+  # metadata operation): an interrupted upload can only ever leave a
+  # .partial object, which the existence check above ignores — the final
+  # path never holds a truncated ISO.
   echo "UPLOAD ${key}: [${datastore}] ${ds_path}/${file}"
-  govc datastore.upload -ds "$datastore" "${tmpdir}/${file}" "${ds_path}/${file}"
+  govc datastore.upload -ds "$datastore" "${tmpdir}/${file}" "${ds_path}/.${file}.partial"
+  govc datastore.mv -ds "$datastore" "${ds_path}/.${file}.partial" "${ds_path}/${file}"
   rm -f "${tmpdir}/${file}"
 done < <(jq -c '.[] | select(.enabled)' ci/matrix.json)
 
