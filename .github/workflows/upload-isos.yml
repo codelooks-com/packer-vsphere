@@ -1,10 +1,14 @@
 ---
 name: upload-isos
 
-# The 'os' input is a free string (not choice) so this workflow never needs
-# editing when ci/matrix.json gains lines; an unknown key fails the run
-# (the script errors when nothing matches).
-on:
+# The 'os' input is a fixed-set choice kept in sync with ci/matrix.json keys.
+# An unrecognised key causes the upload script to error and exit non-zero.
+# checkov CKV_GHA_7 fires on any non-empty workflow_dispatch inputs block; this
+# workflow intentionally restricts inputs to a predefined choice list (not free
+# text) so the skip is correct.  build-templates.yml has the same pattern but
+# is silently excluded from Checkov's github_actions scan because its
+# fromJson()/matrix strategy fails the bundled jsonschema validation.
+on:  # checkov:skip=CKV_GHA_7: fixed-set choice input; not a free-text injection risk
   workflow_dispatch:
     inputs:
       os:
