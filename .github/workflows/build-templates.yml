@@ -4,6 +4,7 @@ name: build-templates
 # Matrix legs come from ci/matrix.json (single source of truth for OS
 # lines). base_name values embed the '-main' branch suffix because builds
 # only run from main.
+# (the dispatch 'options' list below must be kept in sync by hand — GitHub cannot populate choice inputs dynamically).
 on:
   workflow_dispatch:
     inputs:
@@ -100,6 +101,17 @@ jobs:
           export GOVC_DATACENTER="${PKR_VAR_vsphere_datacenter}"
           folder="/${PKR_VAR_vsphere_datacenter}/vm/${PKR_VAR_vsphere_folder}"
           govc version
+          # Guard before mutating anything: if the freshly built template is
+          # missing, fail cleanly with the stable <base> still in place.
+          # (govc ls on a missing path prints nothing and exits 0 — the
+          # emptiness checks below are load-bearing.)
+          if [ -z "$(govc ls "${folder}/${BASE_NAME}-build")" ]; then
+            echo "ERROR: ${BASE_NAME}-build not found — nothing to promote" >&2
+            exit 1
+          fi
+          # First run for a new OS line: neither <base> nor <base>-prev
+          # exists yet; both conditionals no-op and the rename below is all
+          # that happens.
           if [ -n "$(govc ls "${folder}/${BASE_NAME}-prev")" ]; then
             govc vm.destroy "${folder}/${BASE_NAME}-prev"
           fi
