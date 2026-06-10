@@ -45,13 +45,13 @@ locals {
     content_library = "${var.common_iso_content_library}/${var.iso_content_library_item}/${var.iso_file}",
     datastore       = "[${var.common_iso_datastore}] ${var.iso_datastore_path}/${var.iso_file}"
   }
-  manifest_date   = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
-  manifest_path   = "${path.cwd}/manifests/"
-  manifest_output = "${local.manifest_path}${local.manifest_date}.json"
-  base_name           = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
-  vm_name             = "${local.base_name}-build"
+  manifest_date        = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
+  manifest_path        = "${path.cwd}/manifests/"
+  manifest_output      = "${local.manifest_path}${local.manifest_date}.json"
+  base_name            = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${local.build_version}"
+  vm_name              = "${local.base_name}-build"
   content_library_item = local.base_name
-  ovf_export_path     = "${path.cwd}/artifacts/${local.content_library_item}"
+  ovf_export_path      = "${path.cwd}/artifacts/${local.content_library_item}"
   data_source_content = {
     "/ks.cfg" = templatefile("${abspath(path.root)}/data/ks.pkrtpl.hcl", {
       build_username           = var.build_username
@@ -79,8 +79,8 @@ locals {
   }
   data_source_command = var.common_data_source == "http" ? "inst.ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg" : "inst.ks=cdrom:/ks.cfg"
 
-  bucket_name         = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
-  bucket_description  = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
+  bucket_name        = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
+  bucket_description = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
 
 //  BLOCK: source
