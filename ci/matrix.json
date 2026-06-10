@@ -15,5 +15,22 @@
       "type": "sums-regex",
       "pattern": "ubuntu-24\\.04\\.(\\d+)-live-server-amd64\\.iso"
     }
+  },
+  {
+    "key": "ubuntu-2204",
+    "enabled": true,
+    "os": "Linux",
+    "dist": "Ubuntu Server",
+    "version": "22.04",
+    "build_dir": "builds/linux/ubuntu/22-04-lts",
+    "config": "linux-ubuntu-22-04-lts.pkrvars.hcl",
+    "base_name": "linux-ubuntu-22.04-lts-main",
+    "iso_url": "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-live-server-amd64.iso",
+    "sums_url": "https://releases.ubuntu.com/22.04/SHA256SUMS",
+    "iso_datastore_path": "iso/linux/ubuntu-server/22-04-lts/amd64",
+    "discover": {
+      "type": "sums-regex",
+      "pattern": "ubuntu-22\\.04\\.(\\d+)-live-server-amd64\\.iso"
+    }
   }
 ]
