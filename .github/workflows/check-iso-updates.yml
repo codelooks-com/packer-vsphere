@@ -16,6 +16,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: check-iso-updates
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -36,13 +40,19 @@ jobs:
             echo "No ISO bumps."
             exit 0
           fi
-          branch="iso-bumps/${{ github.run_id }}"
+          # Stable branch + force-with-lease: repeated runs with an unmerged
+          # bump update ONE branch/PR instead of accumulating duplicates.
+          branch="iso-bumps/auto"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branch"
-          git add ci/matrix.json ci/config
+          git add ci/matrix.json ci/config/*.pkrvars.hcl
           git commit -m "chore(iso): bump ISO point releases"
-          git push -u origin "$branch"
+          git push --force-with-lease origin "$branch"
+          if [ -n "$(gh pr list --repo "${{ github.repository }}" --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            echo "Open bump PR already exists for $branch — branch updated."
+            exit 0
+          fi
           gh pr create --repo "${{ github.repository }}" \
             --title "chore(iso): bump ISO point releases" \
             --body "Automated point-release bump from check-iso-updates. After merging, dispatch upload-isos for the affected line(s). Close/reopen this PR to trigger checks."

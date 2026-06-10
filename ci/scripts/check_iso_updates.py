@@ -4,7 +4,8 @@
 Two discovery modes per line ("discover" object):
 - sums-regex: the line's sums_url is version-stable (ubuntu major dirs);
   scan it for filenames matching `pattern`, pick the highest captured
-  integer, and bump iso_url's basename in place.
+  integer, and bump iso_url's basename in place. The pattern must expose
+  exactly one integer capture group at the point-release position.
 - dir-listing: scrape `listing_url` HTML for `dir_pattern` directory names
   (point versions), pick the highest version tuple, and re-render iso_url
   and sums_url from `url_template`/`sums_template` ({ver} placeholder).
@@ -46,9 +47,13 @@ def latest_sums_regex(entry: dict) -> tuple[str, str]:
 def latest_dir_listing(entry: dict) -> tuple[str, str]:
     disc = entry["discover"]
     body = fetch(disc["listing_url"])
-    versions = set(re.findall(disc["dir_pattern"], body))
+    found = set(re.findall(disc["dir_pattern"], body))
+    versions = {v for v in found if all(p.isdigit() for p in v.split("."))}
     if not versions:
-        raise RuntimeError(f"{entry['key']}: no dirs match {disc['dir_pattern']!r}")
+        raise RuntimeError(
+            f"{entry['key']}: no numeric version dirs match "
+            f"{disc['dir_pattern']!r} (raw matches: {sorted(found)!r})"
+        )
     newest = max(versions, key=lambda v: tuple(int(p) for p in v.split(".")))
     return (
         disc["url_template"].format(ver=newest),
@@ -79,9 +84,25 @@ def main() -> int:
         text = cfg.read_text()
         old_item = old_file.removesuffix(".iso")
         new_item = new_file.removesuffix(".iso")
-        if old_file not in text:
-            raise RuntimeError(f"{cfg}: expected iso_file {old_file!r} not found")
-        cfg.write_text(text.replace(old_file, new_file).replace(old_item, new_item))
+        # Rewrite only the quoted assignment values — a blanket replace
+        # could mis-edit other occurrences of the basename.
+        text, n_file = re.subn(
+            r'(iso_file\s*=\s*")' + re.escape(old_file) + r'"',
+            lambda m: m.group(1) + new_file + '"',
+            text,
+        )
+        text, n_item = re.subn(
+            r'(iso_content_library_item\s*=\s*")' + re.escape(old_item) + r'"',
+            lambda m: m.group(1) + new_item + '"',
+            text,
+        )
+        if n_file != 1 or n_item != 1:
+            raise RuntimeError(
+                f"{cfg}: expected exactly one iso_file and one "
+                f"iso_content_library_item assignment for {old_file!r} "
+                f"(got {n_file}/{n_item})"
+            )
+        cfg.write_text(text)
         entry["iso_url"] = new_url
         entry["sums_url"] = new_sums
         changed = True
