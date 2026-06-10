@@ -8,9 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       os:
-        description: "OS line key from ci/matrix.json, or all"
-        type: string
+        description: "OS line key from ci/matrix.json, or all (keep in sync with matrix keys)"
+        type: choice
         default: all
+        options:
+          - all
+          - ubuntu-2404
 
 permissions:
   contents: read
