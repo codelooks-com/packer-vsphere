@@ -1,0 +1,94 @@
+---
+name: build-templates
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# Date-stamp-free engine naming means two concurrent runs would race to
+# create the same VM name — serialize.
+concurrency:
+  group: build-templates
+  cancel-in-progress: false
+
+# Cancellation note: -on-error=cleanup covers packer-detected failures but
+# NOT workflow cancellation (SIGTERM) — a cancelled run can leave a
+# 'linux-ubuntu-24.04-lts-*' VM behind. The next run's -force (build.sh)
+# deletes the same-named VM at build start; manual govc cleanup also works.
+
+jobs:
+  ubuntu-2404:
+    runs-on: packer-vsphere
+    timeout-minutes: 150
+    env:
+      PACKER_LOG: "1"
+      PACKER_LOG_PATH: ${{ github.workspace }}/packer-build.log
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Build Ubuntu Server 24.04 LTS
+        run: |
+          set -euo pipefail
+          ./build.sh --ci --os Linux --dist "Ubuntu Server" --version "24.04" "$GITHUB_WORKSPACE/ci/config"
+
+      # upload-artifact v4 rejects ':' in file paths, and the engine names
+      # manifests with a 'YYYY-MM-DD hh:mm:ss' timestamp — rename first.
+      - name: Rename manifests for artifact upload
+        if: always()
+        run: |
+          set -euo pipefail
+          for f in manifests/*.json; do
+            [ -e "$f" ] || continue
+            mv "$f" "${f//[ :]/-}"
+          done
+
+      # Manifests contain only non-sensitive build metadata — safe to retain.
+      - name: Upload build manifest
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-2404-build
+          path: manifests/*.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      # PACKER_LOG=1 plugin debug traces can carry secrets the console
+      # masking never sees (e.g. the interpolated shutdown_command) — and
+      # artifacts on a public repo are downloadable by any authenticated
+      # GitHub user. Redact every sensitive PKR_VAR_* value before upload,
+      # and upload the log only when the build failed (triage-only).
+      - name: Scrub secrets from debug log
+        id: scrub
+        if: failure()
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib
+          p = pathlib.Path("packer-build.log")
+          if p.exists():
+              data = p.read_text(errors="replace")
+              for k, v in os.environ.items():
+                  lk = k.lower()
+                  if k.startswith("PKR_VAR_") and v and ("password" in lk or "key" in lk):
+                      data = data.replace(v, f"[REDACTED:{k}]")
+              p.write_text(data)
+              print("scrubbed", p)
+          else:
+              print("no packer-build.log to scrub")
+          PY
+
+      - name: Upload debug log (failures only)
+        # Gate on scrub success — if the scrub step itself failed, failure()
+        # alone would still upload the RAW (unscrubbed) log.
+        if: failure() && steps.scrub.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-2404-build-debug-log
+          path: packer-build.log
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,60 @@
+---
+name: validate
+
+on:
+  pull_request:
+    paths:
+      - builds/**
+      - ci/config/**
+      - build.sh
+      - project.json
+      - .github/workflows/validate.yml
+
+permissions:
+  contents: read
+
+# Dummy credentials only: packer validate never contacts vCenter, and
+# PR-triggered jobs run GitHub-hosted — real creds exist only on the
+# self-hosted runner, which dispatch-only workflows use.
+env:
+  PKR_VAR_vsphere_endpoint: vc.example.com
+  PKR_VAR_vsphere_username: dummy@example.com
+  PKR_VAR_vsphere_password: dummy
+  PKR_VAR_vsphere_insecure_connection: "true"
+  PKR_VAR_vsphere_cluster: vSAN Cluster
+  PKR_VAR_vsphere_datastore: vsanDatastore
+  PKR_VAR_vsphere_network: VM Network
+  PKR_VAR_build_password: dummy
+  PKR_VAR_build_password_encrypted: $6$dummy$dummy
+  PKR_VAR_build_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDummyDummyDummyDummyDummyDummyDummyDummy dummy
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@1aa358be5cf73883762b302a3a03abd66e75b232 # v3.1.0
+        with:
+          version: "1.15.4"
+
+      - name: Packer fmt
+        run: packer fmt -check -recursive builds/linux/ubuntu/24-04-lts ci/config
+
+      - name: Packer validate (ubuntu 24.04 thin slice)
+        run: |
+          packer init builds/linux/ubuntu/24-04-lts
+          packer validate \
+            -var-file=ci/config/vsphere.pkrvars.hcl \
+            -var-file=ci/config/build.pkrvars.hcl \
+            -var-file=ci/config/ansible.pkrvars.hcl \
+            -var-file=ci/config/proxy.pkrvars.hcl \
+            -var-file=ci/config/common.pkrvars.hcl \
+            -var-file=ci/config/network.pkrvars.hcl \
+            -var-file=ci/config/linux-storage.pkrvars.hcl \
+            -var-file=ci/config/linux-ubuntu-24-04-lts.pkrvars.hcl \
+            builds/linux/ubuntu/24-04-lts

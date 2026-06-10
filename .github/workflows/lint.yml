@@ -20,4 +20,7 @@ jobs:
     with:
       default-branch: main
       soft-launch: false
-      filter-regex-exclude: '(^|/)(vendor|node_modules|\.terraform|\.venv|dist|build)/|.*\.tmpl$'
+      # build.sh/download.sh/config.sh/set-envvars.sh are vendored from
+      # upstream vmware/packer-examples-for-vsphere — not house style; we
+      # carry minimal surgical diffs and re-merge upstream periodically.
+      filter-regex-exclude: '(^|/)(vendor|node_modules|\.terraform|\.venv|dist|build)/|.*\.tmpl$|(^|/)(build|download|config|set-envvars)\.sh$'
