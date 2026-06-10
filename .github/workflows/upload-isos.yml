@@ -34,7 +34,10 @@ concurrency:
 jobs:
   upload:
     runs-on: packer-vsphere
-    timeout-minutes: 120
+    # EL dvd ISOs are ~15 GB; slow mirrors run ~2 MB/s — the rocky-9 staging
+    # was killed at 2h mid-download. Budget generously; the job is mostly
+    # idle network wait and the work volume holds only one ISO at a time.
+    timeout-minutes: 300
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
