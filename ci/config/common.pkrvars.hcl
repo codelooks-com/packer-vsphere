@@ -25,8 +25,9 @@ common_iso_content_library         = "Content Library"
 common_iso_content_library_enabled = false
 
 // Boot and Provisioning Settings
-common_data_source       = "disk"
-common_http_port_min     = 8000
-common_http_port_max     = 8099
-common_ip_wait_timeout   = "20m"
-common_shutdown_timeout  = "15m"
+common_data_source = "disk"
+// http ports are unused with data_source=disk but the vars have no defaults
+common_http_port_min    = 8000
+common_http_port_max    = 8099
+common_ip_wait_timeout  = "20m"
+common_shutdown_timeout = "15m"
