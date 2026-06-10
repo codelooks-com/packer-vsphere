@@ -52,6 +52,7 @@ jobs:
       # GitHub user. Redact every sensitive PKR_VAR_* value before upload,
       # and upload the log only when the build failed (triage-only).
       - name: Scrub secrets from debug log
+        id: scrub
         if: failure()
         run: |
           set -euo pipefail
@@ -71,7 +72,9 @@ jobs:
           PY
 
       - name: Upload debug log (failures only)
-        if: failure()
+        # Gate on scrub success — if the scrub step itself failed, failure()
+        # alone would still upload the RAW (unscrubbed) log.
+        if: failure() && steps.scrub.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ubuntu-2404-build-debug-log
