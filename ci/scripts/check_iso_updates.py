@@ -26,15 +26,17 @@ MATRIX = pathlib.Path("ci/matrix.json")
 
 
 def fetch(url: str) -> str:
+    """Fetch *url* and return its body as a Unicode string."""
     req = urllib.request.Request(url, headers={"User-Agent": "check-iso-updates"})
     with urllib.request.urlopen(req, timeout=60) as resp:
         return resp.read().decode(errors="replace")
 
 
 def latest_sums_regex(entry: dict) -> tuple[str, str]:
+    """Return (new_iso_url, sums_url) by scanning the sums page with a regex."""
     pattern = entry["discover"]["pattern"]
     body = fetch(entry["sums_url"])
-    candidates = {}
+    candidates: dict[int, str] = {}
     for match in re.finditer(pattern, body):
         candidates[int(match.group(1))] = match.group(0)
     if not candidates:
@@ -45,6 +47,7 @@ def latest_sums_regex(entry: dict) -> tuple[str, str]:
 
 
 def latest_dir_listing(entry: dict) -> tuple[str, str]:
+    """Return (new_iso_url, new_sums_url) by scraping a directory listing."""
     disc = entry["discover"]
     body = fetch(disc["listing_url"])
     found = set(re.findall(disc["dir_pattern"], body))
@@ -62,7 +65,8 @@ def latest_dir_listing(entry: dict) -> tuple[str, str]:
 
 
 def main() -> int:
-    matrix = json.loads(MATRIX.read_text())
+    """Entry point: scan matrix entries and rewrite files when a bump is found."""
+    matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
     changed = False
     for entry in matrix:
         if not entry.get("enabled") or "discover" not in entry:
@@ -74,26 +78,29 @@ def main() -> int:
             new_url, new_sums = latest_dir_listing(entry)
         else:
             raise RuntimeError(f"{entry['key']}: unknown discover type {kind!r}")
-        old_file = entry["iso_url"].rsplit("/", 1)[1]
-        new_file = new_url.rsplit("/", 1)[1]
+        old_file: str = entry["iso_url"].rsplit("/", 1)[1]
+        new_file: str = new_url.rsplit("/", 1)[1]
         if new_file == old_file and new_url == entry["iso_url"]:
             print(f"OK   {entry['key']}: {old_file}")
             continue
         print(f"BUMP {entry['key']}: {old_file} -> {new_file}")
         cfg = pathlib.Path("ci/config") / entry["config"]
-        text = cfg.read_text()
-        old_item = old_file.removesuffix(".iso")
-        new_item = new_file.removesuffix(".iso")
+        text = cfg.read_text(encoding="utf-8")
+        old_item: str = old_file.removesuffix(".iso")
+        new_item: str = new_file.removesuffix(".iso")
         # Rewrite only the quoted assignment values — a blanket replace
         # could mis-edit other occurrences of the basename.
+        # Use backreference \\1 so mypy can type the replacement as a plain
+        # str, avoiding the "Cannot infer type of lambda" issue it has with
+        # re.subn's callable overload.
         text, n_file = re.subn(
             r'(iso_file\s*=\s*")' + re.escape(old_file) + r'"',
-            lambda m: m.group(1) + new_file + '"',
+            r"\1" + new_file + '"',
             text,
         )
         text, n_item = re.subn(
             r'(iso_content_library_item\s*=\s*")' + re.escape(old_item) + r'"',
-            lambda m: m.group(1) + new_item + '"',
+            r"\1" + new_item + '"',
             text,
         )
         if n_file != 1 or n_item != 1:
@@ -102,12 +109,12 @@ def main() -> int:
                 f"iso_content_library_item assignment for {old_file!r} "
                 f"(got {n_file}/{n_item})"
             )
-        cfg.write_text(text)
+        cfg.write_text(text, encoding="utf-8")
         entry["iso_url"] = new_url
         entry["sums_url"] = new_sums
         changed = True
     if changed:
-        MATRIX.write_text(json.dumps(matrix, indent=2) + "\n")
+        MATRIX.write_text(json.dumps(matrix, indent=2) + "\n", encoding="utf-8")
     return 0
 
 
