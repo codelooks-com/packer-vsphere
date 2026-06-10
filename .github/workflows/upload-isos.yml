@@ -8,7 +8,7 @@ name: upload-isos
 # text) so the skip is correct.  build-templates.yml has the same pattern but
 # is silently excluded from Checkov's github_actions scan because its
 # fromJson()/matrix strategy fails the bundled jsonschema validation.
-on:  # checkov:skip=CKV_GHA_7: fixed-set choice input; not a free-text injection risk
+on: # checkov:skip=CKV_GHA_7: fixed-set choice input; not a free-text injection risk
   workflow_dispatch:
     inputs:
       os:
