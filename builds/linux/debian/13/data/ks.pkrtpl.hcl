@@ -47,7 +47,12 @@ d-i preseed/late_command string \
     in-target chmod 440 /etc/sudoers.d/${build_username} ;
 
 %{ if common_data_source == "disk" ~}
-# Umount preseed media early
+# Free and drop the preseed CD (sr1) so later install steps only see the
+# OS media. Best-effort on purpose: on trixie, a strict '&&' chain here
+# exits 1 and d-i raises a BLOCKING "Failed to run preseeded command"
+# dialog (observed via console screenshot) — the install then hangs
+# forever. -l (lazy) handles a busy mount; common_remove_cdrom detaches
+# the CDs at the end of the build regardless.
 d-i preseed/early_command string \
-    umount /media && echo 1 > /sys/block/sr1/device/delete ;
+    umount -l /media || true ; echo 1 > /sys/block/sr1/device/delete || true
 %{ endif ~}
