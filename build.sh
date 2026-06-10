@@ -87,6 +87,7 @@ show_help() {
     printf "  \033[0;34m --version\033[0m            Specify the version of the distribution.\n"
     printf "  \033[0;34m --edition\033[0m            Specify the edition (e.g., 'Standard', 'Datacenter').\n"
     printf "  \033[0;34m --auto-continue\033[0m      Automatically continue without user prompts.\n"
+    printf "  \033[0;34m --ci\033[0m                 Non-interactive CI mode: implies --auto-continue, -on-error=cleanup, exits with the build status.\n"
     printf "  \033[0;34m --show, -s, -S\033[0m       Display the build command used to build the image.\n"
     printf "\033[0;34m config_path:\033[0m\n"
     printf "  \033[0m Path to save the generated configuration files. (Optional).\n\n"
@@ -212,6 +213,8 @@ dist=""
 version=""
 edition=""
 auto_continue=false
+ci_mode=false
+on_error_option="-on-error=ask"
 
 # Script options.
 while (("$#")); do
@@ -241,6 +244,11 @@ while (("$#")); do
         version="$2"
         shift 2
         ;;
+    --ci)
+        ci_mode=true
+        auto_continue=true
+        shift
+        ;;
     --auto-continue)
         auto_continue=true
         shift
@@ -269,6 +277,12 @@ done
 # After the loop, check if show_help needs to be run
 if $run_show_help; then
     show_help
+fi
+
+# CI mode: never prompt on failure; clean up the failed VM so a retry
+# is not blocked by a name clash.
+if [ "$ci_mode" = true ]; then
+    on_error_option="-on-error=cleanup"
 fi
 
 if $run_check_dependencies; then
@@ -784,7 +798,7 @@ select_build() {
         var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "network_vars" "storage_vars" "BUILD_VARS")
         validate_linux_username "$config_path/build.pkrvars.hcl"
         printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-        command="packer build -force -on-error=ask $debug_option"
+        command="packer build -force $on_error_option $debug_option"
 
         for var_file in "${var_files[@]}"; do
             command+=" -var-file=\"$config_path/${!var_file}\""
@@ -798,13 +812,13 @@ select_build() {
             printf "\n\e[34m%s\e[0m\n" "$command"
         fi
 
-        eval "$command"
+        eval "$command"; build_rc=$?
         ;;
     "Red Hat Enterprise Linux")
         var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "network_vars" "storage_vars" "rshm_vars" "BUILD_VARS")
         validate_linux_username "$config_path/build.pkrvars.hcl"
         printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-        command="packer build -force -on-error=ask $debug_option"
+        command="packer build -force $on_error_option $debug_option"
 
         for var_file in "${var_files[@]}"; do
             command+=" -var-file=\"$config_path/${!var_file}\""
@@ -818,13 +832,13 @@ select_build() {
             printf "\n\e[34m%s\e[0m\n" "$command"
         fi
 
-        eval "$command"
+        eval "$command"; build_rc=$?
         ;;
     "VMware Photon OS")
         var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "network_vars" "BUILD_VARS")
         validate_linux_username "$config_path/build.pkrvars.hcl"
         printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-        command="packer build -force -on-error=ask $debug_option"
+        command="packer build -force $on_error_option $debug_option"
 
         for var_file in "${var_files[@]}"; do
             command+=" -var-file=\"$config_path/${!var_file}\""
@@ -838,13 +852,13 @@ select_build() {
             printf "\n\e[34m%s\e[0m\n" "$command"
         fi
 
-        eval "$command"
+        eval "$command"; build_rc=$?
         ;;
     "SUSE Linux Enterprise Server")
         var_files=("vsphere_vars" "build_vars" "ansible_vars" "network_vars" "proxy_vars" "common_vars" "scc_vars" "BUILD_VARS")
         validate_linux_username "$config_path/build.pkrvars.hcl"
         printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-        command="packer build -force -on-error=ask $debug_option"
+        command="packer build -force $on_error_option $debug_option"
 
         for var_file in "${var_files[@]}"; do
             command+=" -var-file=\"$config_path/${!var_file}\""
@@ -858,7 +872,7 @@ select_build() {
             printf "\n\e[34m%s\e[0m\n" "$command"
         fi
 
-        eval "$command"
+        eval "$command"; build_rc=$?
         ;;
     "Windows Server")
         case "$edition" in
@@ -867,7 +881,7 @@ select_build() {
             build_username=$(grep 'build_username' "$config_path/build.pkrvars.hcl" | awk -F '"' '{print $2}')
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-            command="packer build -force -on-error=ask $debug_option"
+            command="packer build -force $on_error_option $debug_option"
             command+=" --only=vsphere-iso.windows-server-standard-dexp,vsphere-iso.windows-server-standard-core"
 
             for var_file in "${var_files[@]}"; do
@@ -882,13 +896,13 @@ select_build() {
                 printf "\n\e[34m%s\e[0m\n" "$command"
             fi
 
-            eval "$command"
+            eval "$command"; build_rc=$?
             ;;
         "Datacenter")
             var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "BUILD_VARS")
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-            command="packer build -force -on-error=ask $debug_option"
+            command="packer build -force $on_error_option $debug_option"
             command+=" --only vsphere-iso.windows-server-datacenter-dexp,vsphere-iso.windows-server-datacenter-core"
 
             for var_file in "${var_files[@]}"; do
@@ -903,7 +917,7 @@ select_build() {
                 printf "\n\e[34m%s\e[0m\n" "$command"
             fi
 
-            eval "$command"
+            eval "$command"; build_rc=$?
             ;;
         *)
             print_message error "Unsupported $dist edition: $edition"
@@ -916,7 +930,7 @@ select_build() {
             var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "BUILD_VARS")
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-            command="packer build -force -on-error=ask $debug_option"
+            command="packer build -force $on_error_option $debug_option"
             command+=" --only vsphere-iso.windows-desktop-ent"
 
             for var_file in "${var_files[@]}"; do
@@ -931,13 +945,13 @@ select_build() {
                 printf "\n\e[34m%s\e[0m\n" "$command"
             fi
 
-            eval "$command"
+            eval "$command"; build_rc=$?
             ;;
         "Professional")
             var_files=("vsphere_vars" "build_vars" "ansible_vars" "proxy_vars" "common_vars" "BUILD_VARS")
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
-            command="packer build -force -on-error=ask $debug_option"
+            command="packer build -force $on_error_option $debug_option"
             command+=" --only vsphere-iso.windows-desktop-pro"
 
             for var_file in "${var_files[@]}"; do
@@ -952,7 +966,7 @@ select_build() {
                 printf "\n\e[34m%s\e[0m\n" "$command"
             fi
 
-            eval "$command"
+            eval "$command"; build_rc=$?
             ;;
         *)
             print_message error "Unsupported edition: $dist $edition"
@@ -983,6 +997,12 @@ fi
 
 # Start the script with the selecting the guest operating system.
 select_os
+
+# CI mode: exit with the build's status instead of the interactive
+# continue/quit loop (which spins forever on a closed stdin).
+if [ "$ci_mode" = true ]; then
+    exit "${build_rc:-1}"
+fi
 
 # Prompt the user to continue or quit.
 while true; do
