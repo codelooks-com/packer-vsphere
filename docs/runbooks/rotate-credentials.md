@@ -43,7 +43,7 @@ the runner works:
 gh workflow run build-templates --repo codelooks-com/packer-vsphere -f os=ubuntu-2404
 ```
 
-## 2. BUILD_* credentials (in-guest packer user + ansible SSH keypair)
+## 2. BUILD\_\* credentials (in-guest packer user + Ansible SSH keypair)
 
 ```bash
 # password + its SHA-512 crypt for the autoinstall/kickstart user
