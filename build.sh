@@ -686,6 +686,11 @@ select_build() {
         printf "\n\033[0;31m✘ Error:\033[0m The build directory does not exist: \033[0;34m$INPUT_PATH\033[0m.\n"
 
         if [ "$auto_continue" = true ]; then
+            # CI mode: a missing build directory is fatal — retrying via the
+            # version menu would recurse forever with --version pre-set.
+            if [ "$ci_mode" = true ]; then
+                exit 1
+            fi
             printf "\n\033[0;36m➜ Auto-continue is enabled. Skipping user prompt and retrying...\033[0m\n"
             select_version  # Retry automatically.
         else
