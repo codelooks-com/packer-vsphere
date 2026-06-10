@@ -9,6 +9,7 @@ on:
       - build.sh
       - project.json
       - .github/workflows/validate.yml
+      - ci/matrix.json
 
 permissions:
   contents: read
@@ -43,18 +44,28 @@ jobs:
           version: "1.15.4"
 
       - name: Packer fmt
-        run: packer fmt -check -recursive builds/linux/ubuntu/24-04-lts ci/config
-
-      - name: Packer validate (ubuntu 24.04 thin slice)
         run: |
-          packer init builds/linux/ubuntu/24-04-lts
-          packer validate \
-            -var-file=ci/config/vsphere.pkrvars.hcl \
-            -var-file=ci/config/build.pkrvars.hcl \
-            -var-file=ci/config/ansible.pkrvars.hcl \
-            -var-file=ci/config/proxy.pkrvars.hcl \
-            -var-file=ci/config/common.pkrvars.hcl \
-            -var-file=ci/config/network.pkrvars.hcl \
-            -var-file=ci/config/linux-storage.pkrvars.hcl \
-            -var-file=ci/config/linux-ubuntu-24-04-lts.pkrvars.hcl \
-            builds/linux/ubuntu/24-04-lts
+          set -euo pipefail
+          packer fmt -check -recursive ci/config
+          while IFS= read -r dir; do
+            packer fmt -check -recursive "$dir"
+          done < <(jq -r '.[] | select(.enabled) | .build_dir' ci/matrix.json)
+
+      - name: Packer validate (all enabled matrix lines)
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r dir cfg; do
+            echo "::group::validate ${dir}"
+            packer init "$dir"
+            packer validate \
+              -var-file=ci/config/vsphere.pkrvars.hcl \
+              -var-file=ci/config/build.pkrvars.hcl \
+              -var-file=ci/config/ansible.pkrvars.hcl \
+              -var-file=ci/config/proxy.pkrvars.hcl \
+              -var-file=ci/config/common.pkrvars.hcl \
+              -var-file=ci/config/network.pkrvars.hcl \
+              -var-file=ci/config/linux-storage.pkrvars.hcl \
+              -var-file="ci/config/${cfg}" \
+              "$dir"
+            echo "::endgroup::"
+          done < <(jq -r '.[] | select(.enabled) | [.build_dir, .config] | @tsv' ci/matrix.json)
