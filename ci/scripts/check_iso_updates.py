@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Detect new point releases for the Linux lines in ci/matrix.json.
+
+Two discovery modes per line ("discover" object):
+- sums-regex: the line's sums_url is version-stable (ubuntu major dirs);
+  scan it for filenames matching `pattern`, pick the highest captured
+  integer, and bump iso_url's basename in place. The pattern must expose
+  exactly one integer capture group at the point-release position.
+- dir-listing: scrape `listing_url` HTML for `dir_pattern` directory names
+  (point versions), pick the highest version tuple, and re-render iso_url
+  and sums_url from `url_template`/`sums_template` ({ver} placeholder).
+
+On a bump: rewrites ci/matrix.json (iso_url, sums_url) and the line's
+ci/config var-file (iso_file, iso_content_library_item). Prints one
+"BUMP <key>: <old> -> <new>" line per change; the workflow turns a dirty
+tree into a PR. Exits non-zero only on errors, not on no-changes.
+"""
+
+import json
+import pathlib
+import re
+import sys
+import urllib.request
+
+MATRIX = pathlib.Path("ci/matrix.json")
+
+
+def fetch(url: str) -> str:
+    """Fetch *url* and return its body as a Unicode string."""
+    req = urllib.request.Request(url, headers={"User-Agent": "check-iso-updates"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return resp.read().decode(errors="replace")
+
+
+def latest_sums_regex(entry: dict) -> tuple[str, str]:
+    """Return (new_iso_url, sums_url) by scanning the sums page with a regex."""
+    pattern = entry["discover"]["pattern"]
+    body = fetch(entry["sums_url"])
+    candidates: dict[int, str] = {}
+    for match in re.finditer(pattern, body):
+        candidates[int(match.group(1))] = match.group(0)
+    if not candidates:
+        raise RuntimeError(f"{entry['key']}: no filenames match {pattern!r}")
+    newest = candidates[max(candidates)]
+    base, _, _ = entry["iso_url"].rpartition("/")
+    return f"{base}/{newest}", entry["sums_url"]
+
+
+def latest_dir_listing(entry: dict) -> tuple[str, str]:
+    """Return (new_iso_url, new_sums_url) by scraping a directory listing."""
+    disc = entry["discover"]
+    body = fetch(disc["listing_url"])
+    found = set(re.findall(disc["dir_pattern"], body))
+    versions = {v for v in found if all(p.isdigit() for p in v.split("."))}
+    if not versions:
+        msg = f"{entry['key']}: no dirs match {disc['dir_pattern']!r}; found: {sorted(found)!r}"
+        raise RuntimeError(msg)
+    newest = max(versions, key=lambda v: tuple(int(p) for p in v.split(".")))
+    return (
+        disc["url_template"].format(ver=newest),
+        disc["sums_template"].format(ver=newest),
+    )
+
+
+def main() -> int:
+    """Entry point: scan matrix entries and rewrite files when a bump is found."""
+    matrix = json.loads(MATRIX.read_text(encoding="utf-8"))
+    changed = False
+    for entry in matrix:
+        if not entry.get("enabled") or "discover" not in entry:
+            continue
+        kind = entry["discover"]["type"]
+        if kind == "sums-regex":
+            new_url, new_sums = latest_sums_regex(entry)
+        elif kind == "dir-listing":
+            new_url, new_sums = latest_dir_listing(entry)
+        else:
+            raise RuntimeError(f"{entry['key']}: unknown discover type {kind!r}")
+        old_file: str = entry["iso_url"].rsplit("/", 1)[1]
+        new_file: str = new_url.rsplit("/", 1)[1]
+        if new_file == old_file and new_url == entry["iso_url"]:
+            print(f"OK   {entry['key']}: {old_file}")
+            continue
+        print(f"BUMP {entry['key']}: {old_file} -> {new_file}")
+        cfg = pathlib.Path("ci/config") / entry["config"]
+        text = cfg.read_text(encoding="utf-8")
+        old_item: str = old_file.removesuffix(".iso")
+        new_item: str = new_file.removesuffix(".iso")
+        # Rewrite only the quoted assignment values — a blanket replace
+        # could mis-edit other occurrences of the basename.
+        # Use backreference \\1 so mypy can type the replacement as a plain
+        # str, avoiding the "Cannot infer type of lambda" issue it has with
+        # re.subn's callable overload.
+        text, n_file = re.subn(
+            r'(iso_file\s*=\s*")' + re.escape(old_file) + r'"',
+            r"\1" + new_file + '"',
+            text,
+        )
+        text, n_item = re.subn(
+            r'(iso_content_library_item\s*=\s*")' + re.escape(old_item) + r'"',
+            r"\1" + new_item + '"',
+            text,
+        )
+        if n_file != 1 or n_item != 1:
+            raise RuntimeError(
+                f"{cfg}: expected exactly one iso_file and one "
+                f"iso_content_library_item assignment for {old_file!r} "
+                f"(got {n_file}/{n_item})"
+            )
+        cfg.write_text(text, encoding="utf-8")
+        entry["iso_url"] = new_url
+        entry["sums_url"] = new_sums
+        changed = True
+    if changed:
+        MATRIX.write_text(json.dumps(matrix, indent=2) + "\n", encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
