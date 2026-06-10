@@ -1,9 +1,0 @@
-# Zizmor (GitHub Actions security auditor) configuration.
-rules:
-  artipacked:
-    # check-iso-updates.yml intentionally keeps persist-credentials at its
-    # default (true) so the subsequent "git push --force origin $branch" step
-    # can write to the repository.  All other workflows set
-    # persist-credentials: false explicitly.
-    ignore:
-      - .github/workflows/check-iso-updates.yml
