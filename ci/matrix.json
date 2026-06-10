@@ -72,5 +72,25 @@
       "url_template": "https://cdimage.debian.org/cdimage/release/{ver}/amd64/iso-cd/debian-{ver}-amd64-netinst.iso",
       "sums_template": "https://cdimage.debian.org/cdimage/release/{ver}/amd64/iso-cd/SHA256SUMS"
     }
+  },
+  {
+    "key": "rocky-9",
+    "enabled": true,
+    "os": "Linux",
+    "dist": "Rocky Linux",
+    "version": "9",
+    "build_dir": "builds/linux/rocky/9",
+    "config": "linux-rocky-9.pkrvars.hcl",
+    "base_name": "linux-rocky-9-main",
+    "iso_url": "https://download.rockylinux.org/pub/rocky/9.8/isos/x86_64/Rocky-9.8-x86_64-dvd.iso",
+    "sums_url": "https://download.rockylinux.org/pub/rocky/9.8/isos/x86_64/CHECKSUM",
+    "iso_datastore_path": "iso/linux/rocky-linux/9/amd64",
+    "discover": {
+      "type": "dir-listing",
+      "listing_url": "https://download.rockylinux.org/pub/rocky/",
+      "dir_pattern": "href=\"(9\\.[0-9]+)/\"",
+      "url_template": "https://download.rockylinux.org/pub/rocky/{ver}/isos/x86_64/Rocky-{ver}-x86_64-dvd.iso",
+      "sums_template": "https://download.rockylinux.org/pub/rocky/{ver}/isos/x86_64/CHECKSUM"
+    }
   }
 ]
