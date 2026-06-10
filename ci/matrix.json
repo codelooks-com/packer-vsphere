@@ -92,5 +92,25 @@
       "url_template": "https://download.rockylinux.org/pub/rocky/{ver}/isos/x86_64/Rocky-{ver}-x86_64-dvd.iso",
       "sums_template": "https://download.rockylinux.org/pub/rocky/{ver}/isos/x86_64/CHECKSUM"
     }
+  },
+  {
+    "key": "almalinux-9",
+    "enabled": true,
+    "os": "Linux",
+    "dist": "AlmaLinux OS",
+    "version": "9",
+    "build_dir": "builds/linux/almalinux/9",
+    "config": "linux-almalinux-9.pkrvars.hcl",
+    "base_name": "linux-almalinux-9-main",
+    "iso_url": "https://repo.almalinux.org/almalinux/9.8/isos/x86_64/AlmaLinux-9.8-x86_64-dvd.iso",
+    "sums_url": "https://repo.almalinux.org/almalinux/9.8/isos/x86_64/CHECKSUM",
+    "iso_datastore_path": "iso/linux/almalinux-os/9/amd64",
+    "discover": {
+      "type": "dir-listing",
+      "listing_url": "https://repo.almalinux.org/almalinux/",
+      "dir_pattern": "href=\"(9\\.[0-9]+)/\"",
+      "url_template": "https://repo.almalinux.org/almalinux/{ver}/isos/x86_64/AlmaLinux-{ver}-x86_64-dvd.iso",
+      "sums_template": "https://repo.almalinux.org/almalinux/{ver}/isos/x86_64/CHECKSUM"
+    }
   }
 ]

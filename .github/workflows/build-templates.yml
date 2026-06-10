@@ -19,6 +19,7 @@ on:
           - debian-12
           - debian-13
           - rocky-9
+          - almalinux-9
 
 permissions:
   contents: read
