@@ -1,0 +1,42 @@
+---
+name: upload-isos
+
+# The 'os' input is a free string (not choice) so this workflow never needs
+# editing when ci/matrix.json gains lines; an unknown key fails the run
+# (the script errors when nothing matches).
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: "OS line key from ci/matrix.json, or all"
+        type: string
+        default: all
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-isos
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: packer-vsphere
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Download, verify, and upload ISOs
+        env:
+          SELECTED: ${{ github.event.inputs.os }}
+        run: |
+          set -euo pipefail
+          export GOVC_URL="https://${PKR_VAR_vsphere_endpoint}"
+          export GOVC_USERNAME="${PKR_VAR_vsphere_username}"
+          export GOVC_PASSWORD="${PKR_VAR_vsphere_password}"
+          export GOVC_INSECURE="${PKR_VAR_vsphere_insecure_connection:-true}"
+          export GOVC_DATACENTER="${PKR_VAR_vsphere_datacenter}"
+          bash ci/scripts/upload-isos.sh "$SELECTED"
