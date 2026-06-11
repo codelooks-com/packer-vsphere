@@ -23,6 +23,9 @@ on: # checkov:skip=CKV_GHA_7: fixed-set choice input; not a free-text injection 
           - debian-13
           - rocky-9
           - almalinux-9
+          - windows-server-2025
+          - windows-server-2022
+          - windows-desktop-11
 
 permissions:
   contents: read

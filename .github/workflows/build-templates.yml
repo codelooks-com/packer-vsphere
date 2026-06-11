@@ -24,6 +24,9 @@ on:
           - debian-13
           - rocky-9
           - almalinux-9
+          - windows-server-2025
+          - windows-server-2022
+          - windows-desktop-11
 
 permissions:
   contents: read
@@ -58,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           matrix="$(jq -c --arg sel "$SELECTED" \
-            '[ .[] | select(.enabled and ($sel == "all" or .key == $sel)) ]' \
+            '[ .[] | select((($sel == "all") and .enabled) or ($sel == .key)) ]' \
             ci/matrix.json)"
           test "$(jq 'length' <<<"$matrix")" -gt 0
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
@@ -66,7 +69,7 @@ jobs:
   build:
     needs: plan
     runs-on: packer-vsphere
-    timeout-minutes: 150
+    timeout-minutes: ${{ matrix.timeout_minutes || 150 }}
     strategy:
       fail-fast: false
       # Scale set maxRunners is 3 — leave one slot free for ad-hoc jobs.
@@ -88,10 +91,18 @@ jobs:
           BUILD_OS: ${{ matrix.os }}
           BUILD_DIST: ${{ matrix.dist }}
           BUILD_VERSION: ${{ matrix.version }}
+          BUILD_EDITION: ${{ matrix.edition }}
+          BUILD_ONLY: ${{ matrix.only }}
         run: |
           set -euo pipefail
-          ./build.sh --ci --os "$BUILD_OS" --dist "$BUILD_DIST" \
-            --version "$BUILD_VERSION" "$GITHUB_WORKSPACE/ci/config"
+          args=( --ci --os "$BUILD_OS" --dist "$BUILD_DIST" --version "$BUILD_VERSION" )
+          if [ -n "${BUILD_EDITION:-}" ]; then
+            args+=( --edition "$BUILD_EDITION" )
+          fi
+          if [ -n "${BUILD_ONLY:-}" ]; then
+            args+=( --only "$BUILD_ONLY" )
+          fi
+          ./build.sh "${args[@]}" "$GITHUB_WORKSPACE/ci/config"
 
       # Swap the freshly converted '<base>-build' template into the stable
       # name Terraform clones (<base>), keeping exactly one rollback
