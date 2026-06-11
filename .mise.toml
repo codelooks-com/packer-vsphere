@@ -18,7 +18,7 @@
 
 [tools]
 packer       = "1.15.4"   # >= 1.15.0 required by builds/
-ansible-core = "2.20.6"   # >= 2.16 required by builds/
+ansible-core = "2.21.0"   # >= 2.16 required by builds/
 gomplate     = "4.3.3"    # >= 4.3.0 required for build-ci.tmpl
 terraform    = "1.10.0"
 # docs require jq >= 1.8.3 but 1.8.1 is the newest in the mise registry;
