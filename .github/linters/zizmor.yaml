@@ -3,10 +3,15 @@
 # (LINTER_RULES_PATH default = .github/linters, file name = zizmor.yaml).
 rules:
   artipacked:
-    # check-iso-updates.yml intentionally keeps persist-credentials at its
-    # default (true) so the subsequent "git push --force origin $branch" step
-    # can write to the repository.  All other workflows set
-    # persist-credentials: false explicitly.
+    # These workflows intentionally keep persist-credentials at its default
+    # (true) because later steps push with plain git over the persisted
+    # extraheader credential:
+    #   - check-iso-updates.yml: "git push --force origin $branch"
+    #   - docs.yml: "mkdocs gh-deploy --force" pushes the gh-pages branch
+    #   - release.yml: pushes release/<version> and rebases/pushes main
+    # All other workflows set persist-credentials: false explicitly.
     # Ignore key is the workflow basename only (not the full path).
     ignore:
       - check-iso-updates.yml
+      - docs.yml
+      - release.yml
