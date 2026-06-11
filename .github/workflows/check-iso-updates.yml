@@ -10,6 +10,9 @@ name: check-iso-updates
 # trigger PR-check workflows — close and reopen the PR (or push to its
 # branch) to run lint/validate before merging.
 on:
+  schedule:
+    # Monday 06:00 UTC — bump PRs land before the Saturday rebuild.
+    - cron: "0 6 * * 1"
   workflow_dispatch: {}
 
 permissions:

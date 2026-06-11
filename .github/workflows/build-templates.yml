@@ -6,6 +6,10 @@ name: build-templates
 # only run from main.
 # (the dispatch 'options' list below must be kept in sync by hand — GitHub cannot populate choice inputs dynamically).
 on:
+  schedule:
+    # Weekly rebuild, Saturday 02:00 UTC — all enabled lines (the plan job
+    # defaults to 'all' when there is no dispatch input).
+    - cron: "0 2 * * 6"
   workflow_dispatch:
     inputs:
       os:
