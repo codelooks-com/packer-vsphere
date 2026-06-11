@@ -212,6 +212,7 @@ os=""
 dist=""
 version=""
 edition=""
+only_filter=""
 auto_continue=false
 ci_mode=false
 on_error_option="-on-error=ask"
@@ -238,6 +239,11 @@ while (("$#")); do
         ;;
     --edition)
         edition="$2"
+        shift 2
+        ;;
+    # --only: CI passthrough — restrict a Windows edition build to one packer source (e.g. dexp without core).
+    --only)
+        only_filter="$2"
         shift 2
         ;;
     --version)
@@ -887,7 +893,7 @@ select_build() {
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
             command="packer build -force $on_error_option $debug_option"
-            command+=" --only=vsphere-iso.windows-server-standard-dexp,vsphere-iso.windows-server-standard-core"
+            command+=" --only=${only_filter:-vsphere-iso.windows-server-standard-dexp,vsphere-iso.windows-server-standard-core}"
 
             for var_file in "${var_files[@]}"; do
                 command+=" -var-file=\"$config_path/${!var_file}\""
@@ -908,7 +914,7 @@ select_build() {
             validate_windows_username "$config_path/build.pkrvars.hcl"
             printf "Starting the build of %s %s...\n\n" "$dist" "$version"
             command="packer build -force $on_error_option $debug_option"
-            command+=" --only vsphere-iso.windows-server-datacenter-dexp,vsphere-iso.windows-server-datacenter-core"
+            command+=" --only ${only_filter:-vsphere-iso.windows-server-datacenter-dexp,vsphere-iso.windows-server-datacenter-core}"
 
             for var_file in "${var_files[@]}"; do
                 command+=" -var-file=\"$config_path/${!var_file}\""

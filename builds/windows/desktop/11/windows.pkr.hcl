@@ -47,18 +47,18 @@ locals {
     datastore       = "[${var.common_iso_datastore}] ${var.iso_datastore_path}/${var.iso_file}"
     tools           = "[] /vmimages/tools-isoimages/${var.vm_guest_os_family}.iso"
   }
-  manifest_date      = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
-  manifest_path      = "${path.cwd}/manifests/"
-  manifest_output    = "${local.manifest_path}${local.manifest_date}.json"
-  ovf_export_path    = "${path.cwd}/artifacts/"
-  base_name_pro      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_pro}-${local.build_version}"
-  base_name_ent      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_ent}-${local.build_version}"
-  vm_name_pro        = "${local.base_name_pro}-build"
-  vm_name_ent        = "${local.base_name_ent}-build"
+  manifest_date            = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
+  manifest_path            = "${path.cwd}/manifests/"
+  manifest_output          = "${local.manifest_path}${local.manifest_date}.json"
+  ovf_export_path          = "${path.cwd}/artifacts/"
+  base_name_pro            = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_pro}-${local.build_version}"
+  base_name_ent            = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_ent}-${local.build_version}"
+  vm_name_pro              = "${local.base_name_pro}-build"
+  vm_name_ent              = "${local.base_name_ent}-build"
   content_library_item_pro = local.base_name_pro
   content_library_item_ent = local.base_name_ent
-  bucket_name        = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
-  bucket_description = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
+  bucket_name              = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
+  bucket_description       = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
 
 //  BLOCK: source

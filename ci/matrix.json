@@ -112,5 +112,46 @@
       "url_template": "https://repo.almalinux.org/almalinux/{ver}/isos/x86_64/AlmaLinux-{ver}-x86_64-dvd.iso",
       "sums_template": "https://repo.almalinux.org/almalinux/{ver}/isos/x86_64/CHECKSUM"
     }
+  },
+  {
+    "key": "windows-server-2025",
+    "enabled": false,
+    "os": "Windows",
+    "dist": "Windows Server",
+    "version": "2025",
+    "edition": "Datacenter",
+    "only": "vsphere-iso.windows-server-datacenter-dexp",
+    "build_dir": "builds/windows/server/2025",
+    "config": "windows-server-2025.pkrvars.hcl",
+    "base_name": "windows-server-2025-datacenter-dexp-main",
+    "iso_datastore_path": "iso/windows/windows-server/2025/amd64",
+    "timeout_minutes": 240
+  },
+  {
+    "key": "windows-server-2022",
+    "enabled": false,
+    "os": "Windows",
+    "dist": "Windows Server",
+    "version": "2022",
+    "edition": "Datacenter",
+    "only": "vsphere-iso.windows-server-datacenter-dexp",
+    "build_dir": "builds/windows/server/2022",
+    "config": "windows-server-2022.pkrvars.hcl",
+    "base_name": "windows-server-2022-datacenter-dexp-main",
+    "iso_datastore_path": "iso/windows/windows-server/2022/amd64",
+    "timeout_minutes": 240
+  },
+  {
+    "key": "windows-desktop-11",
+    "enabled": false,
+    "os": "Windows",
+    "dist": "Windows Desktop",
+    "version": "11",
+    "edition": "Enterprise",
+    "build_dir": "builds/windows/desktop/11",
+    "config": "windows-desktop-11.pkrvars.hcl",
+    "base_name": "windows-desktop-11-ent-main",
+    "iso_datastore_path": "iso/windows/windows-desktop/11/amd64",
+    "timeout_minutes": 240
   }
 ]

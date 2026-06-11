@@ -46,34 +46,50 @@ jobs:
       - name: Packer fmt
         run: |
           set -euo pipefail
-          # Fail closed: a malformed matrix or zero enabled entries must fail
-          # the check, not silently validate nothing (process substitution
+          # Fail closed: a malformed matrix or zero entries must fail the
+          # check, not silently validate nothing (process substitution
           # discards jq's exit status).
-          jq -e 'type=="array" and ([.[] | select(.enabled)] | length > 0)' ci/matrix.json >/dev/null
+          jq -e 'type=="array" and length > 0' ci/matrix.json >/dev/null
           packer fmt -check -recursive ci/config
           while IFS= read -r dir; do
             packer fmt -check -recursive "$dir"
-          done < <(jq -r '.[] | select(.enabled) | .build_dir' ci/matrix.json)
+          done < <(jq -r '.[] | .build_dir' ci/matrix.json)
 
-      - name: Packer validate (all enabled matrix lines)
+      - name: Packer validate (all matrix lines, including disabled)
         run: |
           set -euo pipefail
-          # Fail closed: a malformed matrix or zero enabled entries must fail
-          # the check, not silently validate nothing (process substitution
+          # Fail closed: a malformed matrix or zero entries must fail the
+          # check, not silently validate nothing (process substitution
           # discards jq's exit status).
-          jq -e 'type=="array" and ([.[] | select(.enabled)] | length > 0)' ci/matrix.json >/dev/null
+          jq -e 'type=="array" and length > 0' ci/matrix.json >/dev/null
           while IFS=$'\t' read -r dir cfg; do
             echo "::group::validate ${dir}"
             packer init "$dir"
-            packer validate \
-              -var-file=ci/config/vsphere.pkrvars.hcl \
-              -var-file=ci/config/build.pkrvars.hcl \
-              -var-file=ci/config/ansible.pkrvars.hcl \
-              -var-file=ci/config/proxy.pkrvars.hcl \
-              -var-file=ci/config/common.pkrvars.hcl \
-              -var-file=ci/config/network.pkrvars.hcl \
-              -var-file=ci/config/linux-storage.pkrvars.hcl \
-              -var-file="ci/config/${cfg}" \
-              "$dir"
+            case "$dir" in
+              builds/windows/*)
+                # Windows declares no network/storage variables — passing the
+                # Linux var-files would fail with undefined-variable errors.
+                packer validate \
+                  -var-file=ci/config/vsphere.pkrvars.hcl \
+                  -var-file=ci/config/build.pkrvars.hcl \
+                  -var-file=ci/config/ansible.pkrvars.hcl \
+                  -var-file=ci/config/proxy.pkrvars.hcl \
+                  -var-file=ci/config/common.pkrvars.hcl \
+                  -var-file="ci/config/${cfg}" \
+                  "$dir"
+                ;;
+              *)
+                packer validate \
+                  -var-file=ci/config/vsphere.pkrvars.hcl \
+                  -var-file=ci/config/build.pkrvars.hcl \
+                  -var-file=ci/config/ansible.pkrvars.hcl \
+                  -var-file=ci/config/proxy.pkrvars.hcl \
+                  -var-file=ci/config/common.pkrvars.hcl \
+                  -var-file=ci/config/network.pkrvars.hcl \
+                  -var-file=ci/config/linux-storage.pkrvars.hcl \
+                  -var-file="ci/config/${cfg}" \
+                  "$dir"
+                ;;
+            esac
             echo "::endgroup::"
-          done < <(jq -r '.[] | select(.enabled) | [.build_dir, .config] | @tsv' ci/matrix.json)
+          done < <(jq -r '.[] | [.build_dir, .config] | @tsv' ci/matrix.json)

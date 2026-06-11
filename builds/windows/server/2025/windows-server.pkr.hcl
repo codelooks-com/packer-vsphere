@@ -47,24 +47,24 @@ locals {
     datastore       = "[${var.common_iso_datastore}] ${var.iso_datastore_path}/${var.iso_file}"
     tools           = "[] /vmimages/tools-isoimages/${var.vm_guest_os_family}.iso"
   }
-  manifest_date              = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
-  manifest_path              = "${path.cwd}/manifests/"
-  manifest_output            = "${local.manifest_path}${local.manifest_date}.json"
-  ovf_export_path            = "${path.cwd}/artifacts/"
-  base_name_datacenter_core    = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_core}-${local.build_version}"
-  base_name_datacenter_desktop = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
-  base_name_standard_core      = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_core}-${local.build_version}"
-  base_name_standard_desktop   = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
-  vm_name_datacenter_core      = "${local.base_name_datacenter_core}-build"
-  vm_name_datacenter_desktop   = "${local.base_name_datacenter_desktop}-build"
-  vm_name_standard_core        = "${local.base_name_standard_core}-build"
-  vm_name_standard_desktop     = "${local.base_name_standard_desktop}-build"
+  manifest_date                           = formatdate("YYYY-MM-DD hh:mm:ss", timestamp())
+  manifest_path                           = "${path.cwd}/manifests/"
+  manifest_output                         = "${local.manifest_path}${local.manifest_date}.json"
+  ovf_export_path                         = "${path.cwd}/artifacts/"
+  base_name_datacenter_core               = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_core}-${local.build_version}"
+  base_name_datacenter_desktop            = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_datacenter}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
+  base_name_standard_core                 = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_core}-${local.build_version}"
+  base_name_standard_desktop              = "${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}-${var.vm_guest_os_edition_standard}-${var.vm_guest_os_experience_desktop}-${local.build_version}"
+  vm_name_datacenter_core                 = "${local.base_name_datacenter_core}-build"
+  vm_name_datacenter_desktop              = "${local.base_name_datacenter_desktop}-build"
+  vm_name_standard_core                   = "${local.base_name_standard_core}-build"
+  vm_name_standard_desktop                = "${local.base_name_standard_desktop}-build"
   content_library_item_datacenter_core    = local.base_name_datacenter_core
   content_library_item_datacenter_desktop = local.base_name_datacenter_desktop
   content_library_item_standard_core      = local.base_name_standard_core
   content_library_item_standard_desktop   = local.base_name_standard_desktop
-  bucket_name                = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
-  bucket_description         = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
+  bucket_name                             = replace("${var.vm_guest_os_family}-${var.vm_guest_os_name}-${var.vm_guest_os_version}", ".", "")
+  bucket_description                      = "${var.vm_guest_os_family} ${var.vm_guest_os_name} ${var.vm_guest_os_version}"
 }
 
 //  BLOCK: source

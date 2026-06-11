@@ -28,6 +28,10 @@ while IFS= read -r entry; do
 		continue
 	fi
 	matched=$((matched + 1))
+	if [ "$(jq -r 'has("iso_url")' <<<"$entry")" != "true" ]; then
+		echo "MANUAL-ISO ${key}: licensed media staged by hand — skipping"
+		continue
+	fi
 	iso_url="$(jq -r '.iso_url' <<<"$entry")"
 	sums_url="$(jq -r '.sums_url' <<<"$entry")"
 	ds_path="$(jq -r '.iso_datastore_path' <<<"$entry")"
