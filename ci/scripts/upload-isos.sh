@@ -9,16 +9,17 @@
 # Requires: govc env (GOVC_URL/USERNAME/PASSWORD/INSECURE), jq, curl.
 # ISOs are staged in RUNNER_TEMP (the runner work volume) one at a time —
 # peak disk use is a single ISO (largest line ~11 GB EL dvd vs 25 Gi volume).
+# Disabled matrix entries are processed too: staging an ISO ahead of enabling a line is harmless and idempotent.
 set -euo pipefail
 
 selected="${1:?usage: upload-isos.sh <key|all>}"
 tmpdir="${RUNNER_TEMP:-/tmp}"
 datastore="$(grep -E '^common_iso_datastore ' ci/config/common.pkrvars.hcl | awk -F '"' '{print $2}')"
 
-# Fail closed: a malformed matrix or zero enabled entries must fail the run,
+# Fail closed: a malformed matrix or an empty matrix must fail the run,
 # not silently upload nothing (process substitution discards jq's exit
 # status). Also catches an empty datastore extraction.
-jq -e 'type=="array" and ([.[] | select(.enabled)] | length > 0)' ci/matrix.json >/dev/null
+jq -e 'type=="array" and length > 0' ci/matrix.json >/dev/null
 test -n "$datastore"
 
 matched=0
@@ -70,9 +71,9 @@ while IFS= read -r entry; do
 	govc datastore.upload -ds "$datastore" "${tmpdir}/${file}" "${ds_path}/.${file}.partial"
 	govc datastore.mv -ds "$datastore" "${ds_path}/.${file}.partial" "${ds_path}/${file}"
 	rm -f "${tmpdir}/${file}"
-done < <(jq -c '.[] | select(.enabled)' ci/matrix.json)
+done < <(jq -c '.[]' ci/matrix.json)
 
 if [ "$matched" -eq 0 ]; then
-	echo "ERROR: no enabled matrix entry matched key '${selected}'" >&2
+	echo "ERROR: no matrix entry matched key '${selected}'" >&2
 	exit 1
 fi
