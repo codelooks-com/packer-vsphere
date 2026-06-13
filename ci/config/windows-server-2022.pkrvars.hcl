@@ -11,6 +11,11 @@
 vm_inst_os_key_standard   = "VDYBN-27WPP-V4HQT-9VMD4-VMK7H"
 vm_inst_os_key_datacenter = "WX4NM-KYWYW-QJJR4-XV3QB-6VM33"
 
+// Licensed install (NOT evaluation). The autounattend only writes the
+// <ProductKey> (the GVLK above) when this is false; at the default (true)
+// the key is omitted and Setup stalls waiting for product-key input.
+vm_inst_os_eval = false
+
 // Virtual Machine Guest Operating System Setting
 vm_guest_os_type = "windows2019srvNext_64Guest"
 

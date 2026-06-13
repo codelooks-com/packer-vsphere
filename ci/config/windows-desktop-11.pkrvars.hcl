@@ -11,6 +11,11 @@
 vm_inst_os_key_pro = "W269N-WFGWX-YVC9B-4J6C9-T83GX"
 vm_inst_os_key_ent = "NPPR9-FWDCX-D2C8J-H872K-2YT43"
 
+// Licensed install (NOT evaluation). The autounattend only writes the
+// <ProductKey> (the GVLK above) when this is false; at the default (true)
+// the key is omitted and Setup stalls waiting for product-key input.
+vm_inst_os_eval = false
+
 // Virtual Machine Guest Operating System Setting
 vm_guest_os_type = "windows9_64Guest"
 
