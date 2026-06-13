@@ -76,6 +76,11 @@ manifests/*.json
 ## Ignore venv directory.
 venv/
 
-# MkDocs documentation
-## Ignore site directory.
-.site/
+# Zensical documentation (internal site — built locally, not committed)
+docs/site/
+docs/.cache/
+docs/trace.json
+
+# Python bytecode cache
+__pycache__/
+*.pyc

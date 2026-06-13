@@ -1,0 +1,2 @@
+# Zensical documentation generator (internal docs site — built/previewed locally)
+zensical>=0.0.4

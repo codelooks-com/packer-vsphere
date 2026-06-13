@@ -1,109 +1,61 @@
-<!--
-© Broadcom. All Rights Reserved.
-The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
-SPDX-License-Identifier: BSD-2-Clause
--->
-
 <!-- markdownlint-disable first-line-h1 no-inline-html -->
 
-<img src="docs/assets/images/icon-color.svg" alt="VMware vSphere" width="150">
+<img src="docs/docs/assets/images/icon-color.svg" alt="vSphere" width="120">
 
-# Packer Examples for VMware vSphere
+# Packer vSphere Golden Images
 
-![Last Commit](https://img.shields.io/github/last-commit/vmware/packer-examples-for-vsphere?style=for-the-badge&logo=github)&nbsp;&nbsp;
-[![Documentation](https://img.shields.io/badge/Documentation-Read-blue?style=for-the-badge&logo=readthedocs&logoColor=white)](https://vmware.github.io/packer-examples-for-vsphere)
+A fork of [`vmware/packer-examples-for-vsphere`][upstream], customised to build
+multi-OS golden-image templates on the Talos cluster's **ephemeral ARC runners**
+(no pinned build VM). Templates are consumed downstream by
+`codelooks-com/terraform-vsphere`.
 
-This repository provides a collection of opinionated examples that demonstrate how you can use both [HashiCorp Packer][packer] and the [Packer Plugin for VMware vSphere][packer-plugin-vsphere] (`vsphere-iso` builder) to automate the creation of virtual machine images for VMware vSphere environments.
+## What it builds
 
-Whether you're a developer, systems administrator, or site reliability engineer, this project is designed to both help and inspire you in streamlining your infrastructure provisioning process and maintain consistency in your virtualization workflow.
+Nine template lines build on a weekly schedule (and on demand), each converted to
+a vSphere template, patched at build time, and promoted into the `Templates/`
+folder with a one-generation `-prev` rollback:
 
-All examples are provided in the HashiCorp Configuration Language ("HCL").
+| Family      | Lines                                                                         |
+| :---------- | :---------------------------------------------------------------------------- |
+| **Linux**   | Ubuntu 24.04 / 22.04 · Debian 12 / 13 · Rocky 9 · AlmaLinux 9                 |
+| **Windows** | Server 2025 & 2022 (Datacenter, Desktop Experience) · Windows 11 (Enterprise) |
 
-This project supports the following guest operating systems:
+The vendored engine supports many more OSes; `ci/matrix.json` is the single
+source of truth for the lines we actually build.
 
-## Linux Distributions
+## How it works
 
-| Operating System             | Version   |
-|:-----------------------------|:----------|
-| VMware Photon OS             | 5         |
-|                              | 4         |
-| Debian                       | 13        |
-|                              | 12        |
-|                              | 11        |
-| Ubuntu Server                | 24.04 LTS |
-|                              | 22.04 LTS |
-| Red Hat Enterprise Linux     | 10        |
-|                              | 9         |
-|                              | 8         |
-| AlmaLinux OS                 | 10        |
-|                              | 9         |
-|                              | 8         |
-| Rocky Linux                  | 10        |
-|                              | 9         |
-|                              | 8         |
-| Oracle Linux                 | 10        |
-|                              | 9         |
-|                              | 8         |
-| CentOS Stream                | 10        |
-|                              | 9         |
-| Fedora Server                | 43        |
-| SUSE Linux Enterprise Server | 15        |
+`ci/matrix.json` → `build-templates.yml` (GitHub Actions) → an ARC runner pod
+running the `ghcr.io/codelooks-com/packer-runner` image → `build.sh` →
+`packer vsphere-iso` → Ansible provisioning → convert + promote.
 
-## Microsoft Windows
-
-| Operating System         | Version | Editions                    | Experience       |
-|:-------------------------| :---    | :---                        | :---             |
-| Microsoft Windows Server | 2025    | Standard and Datacenter     | Core and Desktop |
-|                          | 2022    | Standard and Datacenter     | Core and Desktop |
-|                          | 2019    | Standard and Datacenter     | Core and Desktop |
-| Microsoft Windows        | 11      | Professional and Enterprise | -                |
-|                          | 10      | Professional and Enterprise | -                |
+Build target: **vSAN Cluster** · `vsanDatastore` · `VM Network` · `Templates`
+folder · SSO domain `core.codelooks.com`.
 
 ## Documentation
 
-Please refer to the [documentation][documentation] for more detailed information about this project.
+Internal docs live in [`docs/`](docs/) and are built with
+[Zensical](https://zensical.org/) — **not published**, build/preview locally:
 
-## Contributing
+```bash
+cd docs
+pip install -r requirements.txt
+zensical serve   # http://localhost:8000
+```
 
-The project team welcomes contributions from the community. All contributions to this repository must be signed as described on that page. Your signature certifies that you wrote the patch or have the right to pass it on as an open-source patch.
+Start with the [Architecture & Pipeline](docs/docs/operations/architecture.md)
+and [Windows Templates](docs/docs/operations/windows.md) pages.
 
-For more detailed information, refer to the [contribution guidelines][contributing] to get started.
+## Upstream & License
 
-## Support
+Based on [`vmware/packer-examples-for-vsphere`][upstream] (tracked via
+`upstream/develop` → `main`). Provided under the Simplified BSD License.
 
-This project is **not supported** by Broadcom Support.
+© Broadcom. All Rights Reserved. The term “Broadcom” refers to Broadcom Inc.
+and/or its subsidiaries.
 
-We welcome you to use the GitHub [issues][gh-issues] tracker to report bugs or suggest features and enhancements.
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the conditions of the [BSD-2-Clause license](docs/docs/license.md)
+are met. THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
 
-When filing an issue, please check existing open, or recently closed, issues to make sure someone else hasn't already
-reported the issue.
-
-Please try to include as much information as you can. Details like these are incredibly useful:
-
-- A reproducible test case or series of steps.
-- Any modifications you've made relevant to the bug.
-- Anything unusual about your environment or deployment.
-
-You can also start a discussion on the [discussions][gh-discussions] area to ask questions or share ideas.
-
-## License
-
-© Broadcom. All Rights Reserved. The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
-
-Available under the Simplified BSD License.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-[//]: Links
-[contributing]: .github/CONTRIBUTING.md
-[documentation]: https://vmware.github.io/packer-examples-for-vsphere
-[gh-issues]: https://github.com/vmware/packer-examples-for-vsphere/issues
-[gh-discussions]: https://github.com/vmware/packer-examples-for-vsphere/discussions
-[packer]: https://www.packer.io
-[packer-plugin-vsphere]: https://developer.hashicorp.com/packer/integrations/vmware/vsphere
+[upstream]: https://github.com/vmware/packer-examples-for-vsphere

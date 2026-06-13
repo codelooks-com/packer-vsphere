@@ -25,4 +25,8 @@ jobs:
       # carry minimal surgical diffs and re-merge upstream periodically.
       # *.pkrtpl.hcl are Packer templatefile() inputs (%{ ~} directives),
       # not Terragrunt HCL — terragrunt hclfmt cannot parse them.
-      filter-regex-exclude: '(^|/)(vendor|node_modules|\.terraform|\.venv|dist|build)/|.*\.tmpl$|.*\.pkrtpl\.hcl$|(^|/)(build|download|config|set-envvars)\.sh$'
+      # docs/ is the Zensical site: MkDocs-Material admonitions/snippets/icons
+      # that default prettier/markdownlint mangle (prettier de-indents
+      # admonition bodies, breaking them) — it is validated by `zensical build`
+      # instead. The repo README stays house-style linted.
+      filter-regex-exclude: '(^|/)(vendor|node_modules|\.terraform|\.venv|dist|build|docs)/|.*\.tmpl$|.*\.pkrtpl\.hcl$|(^|/)(build|download|config|set-envvars)\.sh$'
