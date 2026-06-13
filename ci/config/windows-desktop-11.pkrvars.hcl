@@ -17,6 +17,14 @@ vm_guest_os_type = "windows9_64Guest"
 // Virtual Machine Hardware Settings
 vm_firmware = "efi-secure"
 
+// Boot/Provisioning Timing Override
+// Windows reports its IP only after install + the first-logon VMware Tools
+// setup (much later than Linux cloud-init), so the shared 20m
+// common_ip_wait_timeout (ci/config/common.pkrvars.hcl) times out. Per-OS
+// var-files load AFTER common.pkrvars.hcl, so this overrides it for Windows
+// builds only.
+common_ip_wait_timeout = "60m"
+
 // Removable Media Settings
 iso_datastore_path       = "iso/windows/windows-desktop/11/amd64"
 iso_content_library_item = "windows-desktop-11"
