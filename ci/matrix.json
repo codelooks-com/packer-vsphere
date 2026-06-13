@@ -115,7 +115,7 @@
   },
   {
     "key": "windows-server-2025",
-    "enabled": false,
+    "enabled": true,
     "os": "Windows",
     "dist": "Windows Server",
     "version": "2025",
@@ -129,7 +129,7 @@
   },
   {
     "key": "windows-server-2022",
-    "enabled": false,
+    "enabled": true,
     "os": "Windows",
     "dist": "Windows Server",
     "version": "2022",
@@ -143,7 +143,7 @@
   },
   {
     "key": "windows-desktop-11",
-    "enabled": false,
+    "enabled": true,
     "os": "Windows",
     "dist": "Windows Desktop",
     "version": "11",
