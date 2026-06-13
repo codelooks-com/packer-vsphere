@@ -1,0 +1,99 @@
+[project]
+site_name = "Packer vSphere Golden Images"
+site_description = "Internal documentation for the multi-OS golden-image pipeline (Linux + Windows) built on the Talos cluster's ARC runners."
+site_author = "codelooks-com"
+# Internal-only site — built and previewed locally (`zensical serve`), never
+# published. site_url is a placeholder so absolute links resolve in preview.
+site_url = "http://localhost:8000/"
+copyright = "Copyright &copy; 2026 codelooks-com"
+generator = false
+
+docs_dir = "docs"
+site_dir = "site"
+use_directory_urls = true
+dev_addr = "localhost:8000"
+
+# Repository integration
+repo_url = "https://github.com/codelooks-com/packer-vsphere"
+repo_name = "GitHub"
+edit_uri = "edit/main/docs/docs"
+
+# Theme configuration
+[project.theme]
+name = "material"
+variant = "modern"
+language = "en"
+favicon = "favicon.ico"
+logo = "assets/images/icon-white.svg"
+
+# Color schemes with automatic system preference detection
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "indigo"
+accent = "indigo"
+
+[project.theme.palette.toggle]
+icon = "material/brightness-7"
+name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "indigo"
+accent = "indigo"
+
+[project.theme.palette.toggle]
+icon = "material/brightness-4"
+name = "Switch to light mode"
+
+# Theme features
+[project.theme.features]
+"navigation.instant" = true
+"navigation.tracking" = true
+"navigation.sections" = true
+"navigation.expand" = false
+"navigation.top" = true
+"search.suggest" = true
+"search.highlight" = true
+"content.code.copy" = true
+
+# Social links
+[project.extra]
+social = [
+    { icon = "fontawesome/brands/github", link = "https://github.com/codelooks-com/packer-vsphere", name = "GitHub" }
+]
+
+# Markdown extensions
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+tables = {}
+toc = { permalink = true }
+pymdownx.highlight = {}
+pymdownx.inlinehilite = {}
+pymdownx.superfences = {}
+pymdownx.tabbed = { alternate_style = true }
+pymdownx.details = {}
+pymdownx.emoji = {}
+
+# Navigation structure
+[project.nav]
+"Home" = "index.md"
+"Getting Started" = [
+    { "Requirements" = "getting-started/requirements.md" },
+    { "Get the Project" = "getting-started/get-project.md" },
+    { "Download ISOs" = "getting-started/downloads.md" },
+    { "Privileges" = "getting-started/privileges.md" },
+    { "Configure" = "getting-started/configure.md" },
+    { "Build" = "getting-started/build.md" },
+    { "FAQ" = "getting-started/faq.md" }
+]
+"Operations" = [
+    { "Architecture & Pipeline" = "operations/architecture.md" },
+    { "Windows Templates" = "operations/windows.md" },
+    { "Rotate Credentials" = "runbooks/rotate-credentials.md" }
+]
+"Reference" = [
+    { "License" = "license.md" }
+]

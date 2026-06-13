@@ -341,4 +341,4 @@ Edit the `config/linux-storage.pkrvars.hcl` file to configure a partitioning sch
 [packer-variables]: https://developer.hashicorp.com/packer/docs/templates/hcl_templates/variables
 [vmware-pvscsi]: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.hostclient.doc/GUID-7A595885-3EA5-4F18-A6E7-5952BFC341CC.html
 [vmware-vmxnet3]: https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.vm_admin.doc/GUID-AF9E24A8-2CFA-447B-AC83-35D563119667.html
-[Linux Distributions]: ../index.md#linux-distributions
+[Linux Distributions]: ../index.md

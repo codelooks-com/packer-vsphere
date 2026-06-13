@@ -157,8 +157,8 @@ You can add the environmental variables using the `set-envvars.sh` script.
 
 ???+ note "Content Library"
 
-    By default, the machine image artifacts are transferred to a [vSphere Content Library][vsphere-content-library]
-    as an OVF template and the temporary machine image is destroyed. [^1]
+    By default, the machine image artifacts are transferred to a vSphere Content Library
+    as an OVF template and the temporary machine image is destroyed.
 
     If an item of the same name exists in the target content library, Packer will update the
     existing item with the new version of OVF template.
