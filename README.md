@@ -15,9 +15,9 @@ Nine template lines build on a weekly schedule (and on demand), each converted t
 a vSphere template, patched at build time, and promoted into the `Templates/`
 folder with a one-generation `-prev` rollback:
 
-| Family | Lines |
-|:--|:--|
-| **Linux** | Ubuntu 24.04 / 22.04 · Debian 12 / 13 · Rocky 9 · AlmaLinux 9 |
+| Family      | Lines                                                                         |
+| :---------- | :---------------------------------------------------------------------------- |
+| **Linux**   | Ubuntu 24.04 / 22.04 · Debian 12 / 13 · Rocky 9 · AlmaLinux 9                 |
 | **Windows** | Server 2025 & 2022 (Datacenter, Desktop Experience) · Windows 11 (Enterprise) |
 
 The vendored engine supports many more OSes; `ci/matrix.json` is the single
