@@ -38,6 +38,13 @@
 #         state: latest
 #         ignore_checksums: true
 
+# Clear any reboot left pending by Setup/VMware Tools/specialize so the first
+# win_updates operation doesn't hit an unexpected reboot mid-scan (a cause of
+# the WS-Man "InvalidSelectors" fault when polling across a reboot).
+- name: Reboot to clear pending operations before patching.
+  ansible.windows.win_reboot:
+    reboot_timeout: 1800
+
 - name: Updating the operating system.
   ansible.windows.win_updates:
     category_names:
@@ -47,6 +54,9 @@
       - 5034439
       - 5034441
     reboot: true
+    # Server 2025 "Configuring updates" reboots can exceed the 1200s default;
+    # give the post-update reboot up to an hour to settle before polling.
+    reboot_timeout: 3600
   register: win_updates
   until: not win_updates.failed
   retries: 5

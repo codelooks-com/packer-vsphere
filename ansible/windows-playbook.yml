@@ -11,6 +11,13 @@
     # ansible itself warns: "the winrm connection plugin should have the shell
     # type of cmd and not powershell." cmd wraps commands correctly.
     ansible_shell_type: cmd
+    # win_updates runs long-running update operations and reboots the host.
+    # The default 20s WinRM operation timeout is hit ("WSMan OperationTimeout
+    # during send input"), which destabilises the connection across the
+    # update reboot (Connection refused / InvalidSelectors). Raise both
+    # timeouts; read_timeout must exceed operation_timeout.
+    ansible_winrm_operation_timeout_sec: 120
+    ansible_winrm_read_timeout_sec: 150
   roles:
     - base
     - configure
