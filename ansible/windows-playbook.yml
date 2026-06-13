@@ -3,6 +3,14 @@
   debugger: never
   gather_facts: true
   hosts: all
+  vars:
+    # Force the WinRM connection to use the 'cmd' shell, not 'powershell'.
+    # With ansible-core 2.21 + pywinrm 0.5 the default powershell shell type
+    # sends a malformed -EncodedCommand over WinRM ("value specified with
+    # -EncodedCommand is not properly encoded"), failing at Gathering Facts.
+    # ansible itself warns: "the winrm connection plugin should have the shell
+    # type of cmd and not powershell." cmd wraps commands correctly.
+    ansible_shell_type: cmd
   roles:
     - base
     - configure
