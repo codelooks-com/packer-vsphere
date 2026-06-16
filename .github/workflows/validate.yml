@@ -10,6 +10,17 @@ on:
       - project.json
       - .github/workflows/validate.yml
       - ci/matrix.json
+  # check-iso-updates commits ISO bumps straight to main (no PR), so also
+  # validate on push to main to keep packer validate covering those bumps.
+  push:
+    branches: [main]
+    paths:
+      - builds/**
+      - ci/config/**
+      - build.sh
+      - project.json
+      - .github/workflows/validate.yml
+      - ci/matrix.json
 
 permissions:
   contents: read
