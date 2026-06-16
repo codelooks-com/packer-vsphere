@@ -2,23 +2,17 @@
 # The term “Broadcom” refers to Broadcom Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-2-Clause
 
-.PHONY: docs-install docs-serve docs-serve-live docs-build docs-uninstall
+# Docs are a Zensical site under docs/ (published to GitHub Pages by
+# .github/workflows/docs.yml). Prefer a virtualenv — see docs/README.md.
+.PHONY: docs-install docs-serve docs-build
 docs-install:
-	pip install mkdocs-material
-	pip install --requirement .github/workflows/requirements.txt
+	pip install -r docs/requirements.txt
 
 docs-serve:
-	mkdocs serve
-
-docs-serve-live:
-	mkdocs serve --livereload -w ./
+	cd docs && zensical serve
 
 docs-build:
-	mkdocs build
-
-docs-uninstall:
-	pip uninstall mkdocs-material mkdocs -y
-	pip uninstall -r .github/workflows/requirements.txt -y
+	cd docs && zensical build
 
 .PHONY: update-gitlab-ci
 
