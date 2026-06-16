@@ -1,10 +1,10 @@
 [project]
 site_name = "Packer vSphere Golden Images"
-site_description = "Internal documentation for the multi-OS golden-image pipeline (Linux + Windows) built on the Talos cluster's ARC runners."
+site_description = "Documentation for the codelooks-com multi-OS golden-image pipeline (Linux + Windows) built on the Talos cluster's ARC runners."
 site_author = "codelooks-com"
-# Internal-only site — built and previewed locally (`zensical serve`), never
-# published. site_url is a placeholder so absolute links resolve in preview.
-site_url = "http://localhost:8000/"
+# Published to GitHub Pages via .github/workflows/docs.yml. The subpath in
+# site_url is load-bearing: it sets the base URL for the project Pages site.
+site_url = "https://codelooks-com.github.io/packer-vsphere/"
 copyright = "Copyright &copy; 2026 codelooks-com"
 generator = false
 

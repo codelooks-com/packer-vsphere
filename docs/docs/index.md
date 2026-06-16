@@ -1,9 +1,9 @@
 # Packer vSphere Golden Images
 
-Internal documentation for **`codelooks-com/packer-vsphere`** — a fork of
-[`vmware/packer-examples-for-vsphere`](https://github.com/vmware/packer-examples-for-vsphere)
-customised to build multi-OS golden-image templates on the Talos cluster's
-**ephemeral ARC runners** (no pinned build VM).
+The **`codelooks-com/packer-vsphere`** pipeline builds multi-OS golden-image
+templates for vSphere on the Talos cluster's **ephemeral ARC runners** (no
+pinned build VM). The CI, runner image, and operational pipeline documented here
+are ours.
 
 ## What this builds
 
@@ -50,8 +50,11 @@ ci/matrix.json  ──►  build-templates.yml  ──►  ARC runner pod (packe
 - **[Operations → Rotate Credentials](runbooks/rotate-credentials.md)** — the
   credential-rotation runbook.
 
-!!! note "Fork scope"
-    Upstream community / contribution / release-notes pages are intentionally
-    omitted — this site documents *our* operational pipeline, not the upstream
-    project. Build target: vSAN Cluster · `vsanDatastore` · `VM Network` ·
-    `Templates` folder · SSO domain `core.codelooks.com`.
+!!! note "Scope & attribution"
+    This site documents *our* operational pipeline — upstream community /
+    contribution / release-notes pages are intentionally omitted. The build
+    engine derives from
+    [`vmware/packer-examples-for-vsphere`](https://github.com/vmware/packer-examples-for-vsphere)
+    (BSD-2-Clause; see [License](license.md)). Build target: vSAN Cluster ·
+    `vsanDatastore` · `VM Network` · `Templates` folder · SSO domain
+    `core.codelooks.com`.

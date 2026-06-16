@@ -4,10 +4,10 @@
 
 # Packer vSphere Golden Images
 
-A fork of [`vmware/packer-examples-for-vsphere`][upstream], customised to build
-multi-OS golden-image templates on the Talos cluster's **ephemeral ARC runners**
-(no pinned build VM). Templates are consumed downstream by
-`codelooks-com/terraform-vsphere`.
+The `codelooks-com/packer-vsphere` pipeline builds multi-OS golden-image
+templates on the Talos cluster's **ephemeral ARC runners** (no pinned build VM).
+Templates are consumed downstream by
+[`codelooks-com/terraform-vsphere`](https://github.com/codelooks-com/terraform-vsphere).
 
 ## What it builds
 
@@ -34,17 +34,20 @@ folder · SSO domain `core.codelooks.com`.
 
 ## Documentation
 
-Internal docs live in [`docs/`](docs/) and are built with
-[Zensical](https://zensical.org/) — **not published**, build/preview locally:
+Full docs are published at
+**<https://codelooks-com.github.io/packer-vsphere/>** — built from [`docs/`](docs/)
+with [Zensical](https://zensical.org/) and deployed by
+[`.github/workflows/docs.yml`](.github/workflows/docs.yml) on every push to `main`.
+
+Start with [Architecture & Pipeline](https://codelooks-com.github.io/packer-vsphere/operations/architecture/)
+and [Windows Templates](https://codelooks-com.github.io/packer-vsphere/operations/windows/).
+To preview locally:
 
 ```bash
 cd docs
 pip install -r requirements.txt
 zensical serve   # http://localhost:8000
 ```
-
-Start with the [Architecture & Pipeline](docs/docs/operations/architecture.md)
-and [Windows Templates](docs/docs/operations/windows.md) pages.
 
 ## Upstream & License
 
