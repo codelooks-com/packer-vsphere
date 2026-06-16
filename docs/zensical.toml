@@ -18,6 +18,29 @@ repo_url = "https://github.com/codelooks-com/packer-vsphere"
 repo_name = "GitHub"
 edit_uri = "edit/main/docs/docs"
 
+# Navigation — array form. Zensical reads section titles from { "Title" = … }
+# inline tables; the [project.nav] table form renders every entry as "none".
+nav = [
+    { "Home" = "index.md" },
+    { "Getting Started" = [
+        { "Requirements" = "getting-started/requirements.md" },
+        { "Get the Project" = "getting-started/get-project.md" },
+        { "Download ISOs" = "getting-started/downloads.md" },
+        { "Privileges" = "getting-started/privileges.md" },
+        { "Configure" = "getting-started/configure.md" },
+        { "Build" = "getting-started/build.md" },
+        { "FAQ" = "getting-started/faq.md" },
+    ] },
+    { "Operations" = [
+        { "Architecture & Pipeline" = "operations/architecture.md" },
+        { "Windows Templates" = "operations/windows.md" },
+        { "Rotate Credentials" = "runbooks/rotate-credentials.md" },
+    ] },
+    { "Reference" = [
+        { "License" = "license.md" },
+    ] },
+]
+
 # Theme configuration
 [project.theme]
 name = "material"
@@ -85,25 +108,4 @@ alternate_style = true
 [project.markdown_extensions.pymdownx.superfences]
 custom_fences = [
     { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
-]
-
-# Navigation structure
-[project.nav]
-"Home" = "index.md"
-"Getting Started" = [
-    { "Requirements" = "getting-started/requirements.md" },
-    { "Get the Project" = "getting-started/get-project.md" },
-    { "Download ISOs" = "getting-started/downloads.md" },
-    { "Privileges" = "getting-started/privileges.md" },
-    { "Configure" = "getting-started/configure.md" },
-    { "Build" = "getting-started/build.md" },
-    { "FAQ" = "getting-started/faq.md" }
-]
-"Operations" = [
-    { "Architecture & Pipeline" = "operations/architecture.md" },
-    { "Windows Templates" = "operations/windows.md" },
-    { "Rotate Credentials" = "runbooks/rotate-credentials.md" }
-]
-"Reference" = [
-    { "License" = "license.md" }
 ]
