@@ -29,7 +29,7 @@ export GOVC_URL="https://$(op read 'op://Talos/vsphere-packer/VSPHERE_ENDPOINT')
 export GOVC_USERNAME="$(op read 'op://Talos/vsphere-packer/VSPHERE_USERNAME')"
 export GOVC_PASSWORD="$(op read 'op://Talos/vsphere-packer/VSPHERE_PASSWORD')"
 export GOVC_INSECURE=true
-mise exec "aqua:vmware/govmomi/govc@0.49.0" -- \
+mise exec "aqua:vmware/govmomi/govc@0.54.1" -- \
   govc sso.user.update -p "$NEW_PW" svc-packer
 op item edit vsphere-packer --vault Talos "VSPHERE_PASSWORD=$NEW_PW"
 unset NEW_PW
@@ -96,7 +96,8 @@ kubectl annotate externalsecret -n actions-runner-system packer-runner \
 
 ## Old-ISO cleanup (housekeeping, not a credential)
 
-After an ISO bump PR merges and the new ISO is staged, delete the old one:
+After an ISO bump lands on `main` and `upload-isos` has staged the new ISO
+(both automated by `check-iso-updates`), delete the old one:
 
 ```bash
 govc datastore.ls -ds vsanDatastore 'iso/linux/<os>/<ver>/amd64'

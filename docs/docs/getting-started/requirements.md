@@ -4,6 +4,14 @@ icon: octicons/verified-24
 
 # Environment Requirements
 
+!!! note "Upstream local-build reference"
+
+    The **Getting Started** pages cover the **local / manual** build path
+    (`./build.sh`, `./download.sh`) inherited from upstream and span more
+    operating systems than we build. Day-to-day, golden images are produced by
+    the **CI pipeline** — see
+    [Operations → Architecture & Pipeline](../operations/architecture.md).
+
 ## :octicons-cloud-24: &nbsp; Platform
 
 The project is tested on the following platforms:

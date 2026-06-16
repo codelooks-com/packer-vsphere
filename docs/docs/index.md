@@ -58,9 +58,9 @@ flowchart LR
   credential-rotation runbook.
 
 !!! note "Scope & attribution"
-    This site documents *our* operational pipeline — upstream community /
-    contribution / release-notes pages are intentionally omitted. The build
-    engine derives from
+    **Operations** and **Runbooks** document *our* CI pipeline; **Getting
+    Started** is the upstream local-build reference and covers more than we
+    build. The build engine derives from
     [`vmware/packer-examples-for-vsphere`](https://github.com/vmware/packer-examples-for-vsphere)
     (BSD-2-Clause; see [License](license.md)). Build target: vSAN Cluster ·
     `vsanDatastore` · `VM Network` · `Templates` folder · SSO domain
