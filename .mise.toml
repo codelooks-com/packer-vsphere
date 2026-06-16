@@ -12,9 +12,9 @@
 #   - mise ls               # List installed tools
 #   - mise exec -- <cmd>    # Run a command with mise tools in PATH
 #
-# Minimum versions come from docs/getting-started/requirements.md.
-# This manifest is also the single source of truth for the in-cluster
-# runner image (runner/Dockerfile) — keep them in lockstep.
+# This manifest is the single source of truth for tool versions; the docs
+# (docs/getting-started/requirements.md) point here. It also pins the
+# in-cluster runner image (runner/Dockerfile) — keep them in lockstep.
 
 [tools]
 packer       = "1.15.4"   # >= 1.15.0 required by builds/
