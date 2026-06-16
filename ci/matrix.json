@@ -8,7 +8,7 @@
     "build_dir": "builds/linux/ubuntu/24-04-lts",
     "config": "linux-ubuntu-24-04-lts.pkrvars.hcl",
     "base_name": "linux-ubuntu-24.04-lts-main",
-    "iso_url": "https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso",
+    "iso_url": "https://releases.ubuntu.com/24.04/ubuntu-24.04.4-live-server-amd64.iso",
     "sums_url": "https://releases.ubuntu.com/24.04/SHA256SUMS",
     "iso_datastore_path": "iso/linux/ubuntu-server/24-04-lts/amd64",
     "discover": {
@@ -42,8 +42,8 @@
     "build_dir": "builds/linux/debian/12",
     "config": "linux-debian-12.pkrvars.hcl",
     "base_name": "linux-debian-12-main",
-    "iso_url": "https://cdimage.debian.org/cdimage/archive/12.13.0/amd64/iso-cd/debian-12.13.0-amd64-netinst.iso",
-    "sums_url": "https://cdimage.debian.org/cdimage/archive/12.13.0/amd64/iso-cd/SHA256SUMS",
+    "iso_url": "https://cdimage.debian.org/cdimage/archive/12.14.0/amd64/iso-cd/debian-12.14.0-amd64-netinst.iso",
+    "sums_url": "https://cdimage.debian.org/cdimage/archive/12.14.0/amd64/iso-cd/SHA256SUMS",
     "iso_datastore_path": "iso/linux/debian/12/amd64",
     "discover": {
       "type": "dir-listing",
