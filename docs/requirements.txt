@@ -1,2 +1,4 @@
-# Zensical documentation generator (internal docs site — built/previewed locally)
-zensical>=0.0.4
+# Zensical documentation generator. Floor at 0.0.45: it renders
+# pymdownx.superfences custom fences (Mermaid) correctly — older builds (e.g.
+# 0.0.5) silently pass ```mermaid through as a literal code block.
+zensical>=0.0.45

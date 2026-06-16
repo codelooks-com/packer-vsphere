@@ -19,13 +19,20 @@ These templates are consumed downstream by `codelooks-com/terraform-vsphere`.
 
 ## How it works (at a glance)
 
-```text
-ci/matrix.json  ──►  build-templates.yml  ──►  ARC runner pod (packer-runner image)
- (one entry per          (GitHub Actions,         │
-  OS line; single         weekly cron + manual)    ├─ build.sh → packer vsphere-iso
-  source of truth)                                 ├─ install via CD (autounattend / cloud-init / kickstart)
-                                                    ├─ ansible provisioner (patches, hardening)
-                                                    └─ convert to template → promote (-prev swap)
+```mermaid
+flowchart LR
+    M["ci/matrix.json<br>one entry per OS line<br>single source of truth"]
+    W["build-templates.yml<br>GitHub Actions<br>weekly cron + manual"]
+    M --> W --> Pod
+
+    subgraph Pod["ARC runner pod · packer-runner image"]
+        direction TB
+        S1["build.sh → packer vsphere-iso"]
+        S2["install via CD<br>autounattend / cloud-init / kickstart"]
+        S3["ansible provisioner<br>patches, hardening"]
+        S4["convert to template → promote (-prev swap)"]
+        S1 --> S2 --> S3 --> S4
+    end
 ```
 
 - **`ci/matrix.json`** is the single source of truth — each OS line is one entry

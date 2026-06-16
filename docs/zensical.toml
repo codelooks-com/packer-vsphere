@@ -64,18 +64,28 @@ social = [
     { icon = "fontawesome/brands/github", link = "https://github.com/codelooks-com/packer-vsphere", name = "GitHub" }
 ]
 
-# Markdown extensions
-[project.markdown_extensions]
-admonition = {}
-attr_list = {}
-tables = {}
-toc = { permalink = true }
-pymdownx.highlight = {}
-pymdownx.inlinehilite = {}
-pymdownx.superfences = {}
-pymdownx.tabbed = { alternate_style = true }
-pymdownx.details = {}
-pymdownx.emoji = {}
+# Markdown extensions — one [table] header per extension (Zensical's idiom;
+# the inline `pymdownx.superfences = {…}` form silently disables the fence).
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+
+[project.markdown_extensions.pymdownx.highlight]
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.emoji]
+
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+
+# Mermaid: render fenced ```mermaid blocks client-side (Zensical auto-loads
+# mermaid.js when a page contains a mermaid block).
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+    { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
 
 # Navigation structure
 [project.nav]
