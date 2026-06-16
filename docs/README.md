@@ -1,8 +1,9 @@
 # Packer vSphere Golden Images — Documentation
 
-This directory contains the **internal** documentation site, built with
-[Zensical](https://zensical.org/). It is **not published** — build and preview
-it locally.
+This directory is the documentation site, built with
+[Zensical](https://zensical.org/) and published to
+[GitHub Pages](https://codelooks-com.github.io/packer-vsphere/). Build and
+preview it locally with the steps below.
 
 ## Development
 
@@ -51,6 +52,8 @@ Use `zensical build --clean` to rebuild from scratch.
 
 ## Hosting
 
-Intentionally **internal-only**: there is no deploy workflow and the site is
-never pushed to GitHub Pages. Share the built `site/` directory through an
-internal channel if needed, or just run `zensical serve` locally.
+Published to **GitHub Pages** at
+<https://codelooks-com.github.io/packer-vsphere/> by
+[`.github/workflows/docs.yml`](../.github/workflows/docs.yml) on every push to
+`main` that touches `docs/`. The `site/` build output stays git-ignored — Pages
+rebuilds it from source in CI. Use `zensical serve` for local preview.

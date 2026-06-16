@@ -9,6 +9,14 @@ on:
   schedule:
     # Weekly rebuild, Saturday 02:00 UTC — all enabled lines (the plan job
     # defaults to 'all' when there is no dispatch input).
+    #
+    # Two GitHub scheduler caveats (neither is an approval gate):
+    #   - Cron is best-effort and is frequently delayed under load — observed
+    #     starts run hours after 02:00. Don't rely on the exact minute.
+    #   - GitHub auto-disables scheduled workflows after ~60 days with no
+    #     repository activity; re-enable from the Actions tab if it happens.
+    #     The Monday check-iso-updates commit to main normally keeps the repo
+    #     active enough to avoid this.
     - cron: "0 2 * * 6"
   workflow_dispatch:
     inputs:

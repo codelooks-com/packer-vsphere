@@ -11,7 +11,7 @@ How a golden image goes from `ci/matrix.json` to a promoted vSphere template.
 | `build.sh` | this repo | Wraps `packer init/validate/build` per OS line. |
 | `packer-runner` image | `ghcr.io/codelooks-com/packer-runner` | Pinned toolchain (Packer, Ansible, govc, mise). |
 | ARC scale set `packer-vsphere` | `LukeEvansTech/talos-cluster` | Ephemeral runner pods (`min 0 / max 3`). |
-| `validate.yml` / `upload-isos.yml` | `.github/workflows` | PR validation of every entry; staging ISOs to the datastore. |
+| `validate.yml` / `upload-isos.yml` | `.github/workflows` | `packer validate` every entry (PRs + pushes to `main`); staging ISOs to the datastore. |
 
 ## The matrix
 
@@ -38,8 +38,22 @@ jq -c --arg sel "$SELECTED" \
 - **Build:** weekly, Saturday **02:00 UTC** (`build-templates.yml`), `all`
   enabled lines, `max-parallel: 2` (at most two build VMs hold a DHCP lease at
   once). Runs serialize via the `build-templates` concurrency group.
-- **ISO currency:** `check-iso-updates.yml`, Monday **06:00 UTC** — opens a PR
-  when a newer Linux ISO is published (discovery via the matrix `discover` block).
+- **ISO currency:** `check-iso-updates.yml`, Monday **06:00 UTC** — when a newer
+  Linux point release is published (discovery via the matrix `discover` block),
+  it commits the `iso_url`/`sums_url` + `iso_file` bump **straight to `main`**
+  (no PR, no approval gate) and dispatches `upload-isos` for each bumped line, so
+  the datastore is staged before Saturday's rebuild. `validate.yml` re-runs
+  `packer validate` on the push to `main`, so the bump is still checked.
+
+!!! note "GitHub scheduler caveats"
+    Neither is an approval gate, but both affect unattended runs:
+
+    - **Timing is best-effort.** Cron is frequently delayed under load — runs
+      have started hours after the nominal time. Don't rely on the exact minute.
+    - **60-day auto-disable.** GitHub disables scheduled workflows after ~60 days
+      with no repository activity; re-enable from the **Actions** tab if it
+      happens. The Monday ISO commit to `main` normally keeps the repo active
+      enough to prevent this.
 
 ## Build flow
 
