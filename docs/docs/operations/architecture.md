@@ -71,10 +71,12 @@ jq -c --arg sel "$SELECTED" \
    `<base>-build`; the **promote** step renames it into the stable `<base>` that
    Terraform clones, rolling the previous generation to `<base>-prev`:
 
-   ```text
-   <base>-prev   (deleted)
-   <base>        → <base>-prev   (rollback kept)
-   <base>-build  → <base>        (new template live)
+   ```mermaid
+   flowchart TB
+       S1["destroy &lt;base&gt;-prev<br>(old rollback)"]
+       S2["rename &lt;base&gt; → &lt;base&gt;-prev<br>(rollback kept)"]
+       S3["rename &lt;base&gt;-build → &lt;base&gt;<br>(new template live)"]
+       S1 --> S2 --> S3
    ```
 
    Success-only: a failed build never touches the stable `<base>`.
