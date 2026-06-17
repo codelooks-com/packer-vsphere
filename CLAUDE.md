@@ -69,7 +69,7 @@ cd tests/network && bats test            # also: cd tests/storage && bats test
 
 python3 ci/scripts/check_iso_updates.py  # detect Linux ISO bumps locally
 
-# Docs (Zensical — NOT the stale mkdocs Makefile targets)
+# Docs (Zensical site under docs/; make docs-serve / make docs-build wrap these)
 cd docs && pip install -r requirements.txt && zensical serve   # preview
 cd docs && zensical build                                       # build to docs/site
 
@@ -85,10 +85,8 @@ blocks and other `pymdownx.superfences` custom fences as literal code blocks.
 
 - **Vendored upstream files carry minimal surgical diffs** and are excluded from
   house-style lint: `build.sh`, `download.sh`, `config.sh`, `set-envvars.sh`,
-  `config/`, `*.tmpl`, `*.pkrtpl.hcl`, and `docs/` (the docs site is validated by
-  `zensical build`, not super-linter). The `Makefile` `docs-*` targets are stale
-  upstream (they use `mkdocs` + a missing requirements file) — use the Zensical
-  commands above.
+  `config/`, `*.pkrtpl.hcl`, and `docs/` (the docs site is validated by
+  `zensical build`, not super-linter).
 - **super-linter only checks changed, non-excluded files.** Root markdown
   (`README.md`, `.mise.md`) gets prettier **and** textlint terminology rules
   (e.g. `Git`, not `git`).
