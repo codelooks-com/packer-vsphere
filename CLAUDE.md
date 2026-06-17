@@ -87,13 +87,13 @@ blocks and other `pymdownx.superfences` custom fences as literal code blocks.
   house-style lint: `build.sh`, `download.sh`, `config.sh`, `set-envvars.sh`,
   `config/`, `*.pkrtpl.hcl`, and `docs/` (the docs site is validated by
   `zensical build`, not super-linter).
-- **super-linter only checks changed, non-excluded files.** Root markdown
+- **super-linter only checks changed, non-excluded files.** Root Markdown
   (`README.md`, `.mise.md`) gets prettier **and** textlint terminology rules
   (e.g. `Git`, not `git`).
 - **`gh` may resolve to the upstream `vmware` remote** — pass
   `-R codelooks-com/packer-vsphere` or run `gh repo set-default`.
 - **Scheduled workflows**: GitHub cron is best-effort (often delayed) and
-  auto-disables after ~60 days of repo inactivity.
+  auto-disables after ~60 days of repository inactivity.
 - **Docs scope**: `docs/docs/operations/` + `runbooks/` document _our_ pipeline;
   `getting-started/` is the upstream local-build reference.
 - **Windows builds** have hard-won, documented gotchas (`vm_inst_os_eval=false`
