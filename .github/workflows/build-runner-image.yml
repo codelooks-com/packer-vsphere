@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/codelooks-com/packer-runner
+  IMAGE: ghcr.io/codelooks-com/packer-runner@sha256:f08e20f8fc791849d0e311ed920eb34f8911fdd4b21153ad7e41da97f62d84a3
 
 jobs:
   build:
