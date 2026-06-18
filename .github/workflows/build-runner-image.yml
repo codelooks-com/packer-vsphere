@@ -19,7 +19,10 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/codelooks-com/packer-runner@sha256:f08e20f8fc791849d0e311ed920eb34f8911fdd4b21153ad7e41da97f62d84a3
+  # This is the image we BUILD and PUSH (used as ${IMAGE}:latest / ${IMAGE}:date-sha
+  # below), not one we pull — it must stay a bare name with no digest. Renovate is
+  # told to leave it alone in .renovaterc.json5 (packageRules).
+  IMAGE: ghcr.io/codelooks-com/packer-runner
 
 jobs:
   build:

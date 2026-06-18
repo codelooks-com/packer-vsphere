@@ -7,7 +7,8 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu@sha256:d1fc409bd576f7b6f81c5cfd
 # Install additional packages.
 
 RUN apt-get update && \
-    apt-get install -y apt-transport-https curl git jq software-properties-common unzip wget whois xorriso ca-certificates
+    apt-get install -y apt-transport-https curl git jq software-properties-common unzip wget whois xorriso ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN update-ca-certificates
 
@@ -56,7 +57,8 @@ RUN update-ca-certificates
 # Install Python3 and Ansible.
 RUN add-apt-repository --yes --update ppa:ansible/ansible && \
     apt-get update && \
-    apt-get install -y python3 python3-pip ansible
+    apt-get install -y python3 python3-pip ansible && \
+    rm -rf /var/lib/apt/lists/*
 
 # Cleanup.
 RUN apt-get autoremove -y && \
