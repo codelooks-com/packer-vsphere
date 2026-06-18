@@ -1,4 +1,13 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   extends: ["github>LukeEvansTech/renovate-config"],
+  packageRules: [
+    {
+      // This is the image WE build and push, not a dependency we pull.
+      // Don't let docker:pinDigests pin a digest onto it — that would turn
+      // ${IMAGE}:latest in build-runner-image.yml into an invalid ref.
+      matchPackageNames: ["ghcr.io/codelooks-com/packer-runner"],
+      enabled: false,
+    },
+  ],
 }
