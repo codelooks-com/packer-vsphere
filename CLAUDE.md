@@ -46,7 +46,9 @@ digest-pinned and runs as an ARC scale-set pod defined in
 `LukeEvansTech/talos-cluster` (min 0 / max 3). **`.mise.toml` is the single
 source of truth for tool versions** (packer, ansible-core, gomplate, terraform,
 jq, govc, goss, gh) and pins the runner image too — keep them in lockstep.
-Install locally with `mise install`.
+Install locally with `mise install`. When a version changes (e.g. Renovate
+bumps a tool), also update the `.mise.md` table by hand — super-linter only
+lints changed files, so it will not flag the drift.
 
 ## Two config trees — do not confuse
 
@@ -90,6 +92,15 @@ blocks and other `pymdownx.superfences` custom fences as literal code blocks.
 - **super-linter only checks changed, non-excluded files.** Root Markdown
   (`README.md`, `.mise.md`) gets prettier **and** textlint terminology rules
   (e.g. `Git`, not `git`).
+- **Renovate** (`.renovaterc.json5`) extends the shared
+  `github>LukeEvansTech/renovate-config` preset and is written in `json5`.
+  super-linter lints it through prettier's json5 parser (inferred from the
+  extension), which wants **unquoted keys + a trailing comma** — run
+  `prettier --write .renovaterc.json5` after editing, or `JSONC_PRETTIER`
+  fails. The preset enables `docker:pinDigests`; the self-built
+  `ghcr.io/codelooks-com/packer-runner` image is excluded via `packageRules`
+  because it is a build/push target, not a pulled dependency (a digest there
+  would make `${IMAGE}:latest` in `build-runner-image.yml` an invalid ref).
 - **`gh` may resolve to the upstream `vmware` remote** — pass
   `-R codelooks-com/packer-vsphere` or run `gh repo set-default`.
 - **Scheduled workflows**: GitHub cron is best-effort (often delayed) and
