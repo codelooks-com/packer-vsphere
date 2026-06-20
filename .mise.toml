@@ -23,7 +23,7 @@ gomplate     = "5.1.0"    # >= 4.3.0 required for build-ci.tmpl
 terraform    = "1.15.6"
 # docs require jq >= 1.8.3 but 1.8.1 is the newest in the mise registry;
 # no build path depends on the 1.8.2+ fixes.
-jq           = "1.8.1"
+jq           = "1.8.2"
 # CI/runner tooling (used by the in-cluster runner image and smoke tests)
 "aqua:vmware/govmomi/govc" = "0.54.1"  # vCenter CLI (mise id is the aqua backend, NOT bare "govc")
 goss = "0.4.9"    # post-build smoke assertions
