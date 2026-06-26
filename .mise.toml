@@ -25,7 +25,7 @@ terraform    = "1.15.6"
 # no build path depends on the 1.8.2+ fixes.
 jq           = "1.8.1"
 # CI/runner tooling (used by the in-cluster runner image and smoke tests)
-"aqua:vmware/govmomi/govc" = "0.54.1"  # vCenter CLI (mise id is the aqua backend, NOT bare "govc")
+"aqua:vmware/govmomi/govc" = "0.55.0"  # vCenter CLI (mise id is the aqua backend, NOT bare "govc")
 goss = "0.4.9"    # post-build smoke assertions
 gh   = "2.95.0"   # GitHub CLI: check-iso-updates dispatches upload-isos via gh
 
