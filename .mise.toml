@@ -27,7 +27,7 @@ jq           = "1.8.1"
 # CI/runner tooling (used by the in-cluster runner image and smoke tests)
 "aqua:vmware/govmomi/govc" = "0.54.1"  # vCenter CLI (mise id is the aqua backend, NOT bare "govc")
 goss = "0.4.9"    # post-build smoke assertions
-gh   = "2.95.0"   # GitHub CLI: check-iso-updates dispatches upload-isos via gh
+gh   = "2.96.0"   # GitHub CLI: check-iso-updates dispatches upload-isos via gh
 
 # git >= 2.43.0 and xorriso >= 1.5.6 (Linux) come from the system package
 # manager / runner image, not mise.
