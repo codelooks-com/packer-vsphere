@@ -42,8 +42,8 @@
     "build_dir": "builds/linux/debian/12",
     "config": "linux-debian-12.pkrvars.hcl",
     "base_name": "linux-debian-12-main",
-    "iso_url": "https://cdimage.debian.org/cdimage/archive/12.14.0/amd64/iso-cd/debian-12.14.0-amd64-netinst.iso",
-    "sums_url": "https://cdimage.debian.org/cdimage/archive/12.14.0/amd64/iso-cd/SHA256SUMS",
+    "iso_url": "https://cdimage.debian.org/cdimage/archive/12.15.0/amd64/iso-cd/debian-12.15.0-amd64-netinst.iso",
+    "sums_url": "https://cdimage.debian.org/cdimage/archive/12.15.0/amd64/iso-cd/SHA256SUMS",
     "iso_datastore_path": "iso/linux/debian/12/amd64",
     "discover": {
       "type": "dir-listing",
@@ -62,8 +62,8 @@
     "build_dir": "builds/linux/debian/13",
     "config": "linux-debian-13.pkrvars.hcl",
     "base_name": "linux-debian-13-main",
-    "iso_url": "https://cdimage.debian.org/cdimage/release/13.5.0/amd64/iso-cd/debian-13.5.0-amd64-netinst.iso",
-    "sums_url": "https://cdimage.debian.org/cdimage/release/13.5.0/amd64/iso-cd/SHA256SUMS",
+    "iso_url": "https://cdimage.debian.org/cdimage/release/13.6.0/amd64/iso-cd/debian-13.6.0-amd64-netinst.iso",
+    "sums_url": "https://cdimage.debian.org/cdimage/release/13.6.0/amd64/iso-cd/SHA256SUMS",
     "iso_datastore_path": "iso/linux/debian/13/amd64",
     "discover": {
       "type": "dir-listing",
