@@ -37,21 +37,21 @@ RUN --mount=type=secret,id=github_token,mode=0444 \
  && mise install \
  && mise reshim
 
-# Install pywinrm into ansible-core's OWN venv (the mise/pipx interpreter, NOT
+# Install pywinrm into ansible-core's OWN interpreter (the mise/pipx venv, NOT
 # system python3) so ansible's WinRM connection plugin can import it at runtime.
 # This is a control-node dependency: without it every Windows build fails ~7 min
 # into provisioning with "No module named 'winrm'" (Linux uses SSH — unaffected;
-# this guards the 2026-06 Windows outage, see docs/docs/operations/windows.md).
+# see the 2026-06 Windows outage in docs/docs/operations/windows.md).
 #
-# Resolve the venv from the real ansible binary (mise which bypasses shims) via
-# its parent dir, and drive pip/verify through that venv's python directly —
-# more robust than parsing the script shebang, which breaks on a '/usr/bin/env'
-# shebang or a shim wrapper. build-templates.yml re-checks this same import at
-# run time (Preflight step) so a future venv reshuffle can't silently orphan
-# pywinrm again.
-RUN ANSIBLE_VENV="$(dirname "$(dirname "$(mise which ansible)")")" \
- && "${ANSIBLE_VENV}/bin/python" -m pip install --no-cache-dir pywinrm \
- && "${ANSIBLE_VENV}/bin/python" -c "import winrm"
+# The interpreter is the ansible console-script's shebang. mise installs
+# ansible-core via its pipx backend, whose install dir holds the entry scripts
+# but NO sibling python (installs/ansible-core/<v>/bin/ has ansible, not
+# python) — so the shebang, an absolute venv python path, is the only reliable
+# pointer. build-templates.yml re-checks this exact import at run time (the
+# Preflight step) as the real safety net against a broken deployed image.
+RUN ANSIBLE_PY="$(sed -n '1s/^#!//p' "$(mise which ansible)")" \
+ && "$ANSIBLE_PY" -m pip install --no-cache-dir pywinrm \
+ && "$ANSIBLE_PY" -c "import winrm"
 
 # Install the ansible galaxy collections the playbooks require.
 # linux-requirements.yml + windows-requirements.yml (incl. ansible.windows) are

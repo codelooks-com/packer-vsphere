@@ -97,15 +97,16 @@ jobs:
       # Ansible's WinRM connection plugin imports pywinrm on the control node
       # (this runner) using ansible's OWN interpreter. If it's missing, the build
       # fails ~7 min into provisioning with a cryptic "No module named 'winrm'"
-      # (Linux uses SSH — unaffected). Assert it up front, via the same venv
-      # python ansible runs under, so a bad runner image fails in seconds with a
-      # clear message instead of deep in a Packer/Ansible trace. See
-      # runner/Dockerfile (pywinrm install) and docs/docs/operations/windows.md.
+      # (Linux uses SSH — unaffected). Assert it up front, via the same interpreter
+      # ansible runs under (its console-script shebang — the mise/pipx install dir
+      # has no sibling python), so a bad runner image fails in seconds with a clear
+      # message instead of deep in a Packer/Ansible trace. Mirrors the install in
+      # runner/Dockerfile; see docs/docs/operations/windows.md.
       - name: Preflight WinRM control-node deps (Windows only)
         if: matrix.os == 'Windows'
         run: |
           set -euo pipefail
-          py="$(dirname "$(dirname "$(mise which ansible)")")/bin/python"
+          py="$(sed -n '1s/^#!//p' "$(mise which ansible)")"
           if ! "${py}" -c "import winrm" 2>/dev/null; then
             echo "::error::pywinrm not importable by ansible (${py}). The packer-runner image is missing the Windows control-node dependency — rebuild it (runner/Dockerfile) and bump the digest in talos-cluster." >&2
             exit 1
