@@ -27,9 +27,15 @@ more OSes; the matrix is what we actually build.
   to `<base>-build` → **promote** renames it to the stable `<base>` Terraform
   clones and rolls the prior generation to `<base>-prev` (success-only).
 - **`check-iso-updates.yml`** — weekly (Mon 06:00 UTC). `ci/scripts/check_iso_updates.py`
-  detects new Linux point releases and **commits the bump straight to `main`
-  (no PR, no approval gate)**, then dispatches `upload-isos` for each bumped
-  line. Do not "fix" this into a PR/merge-gate flow — it is intentional.
+  detects new Linux point releases; the workflow validates the bump inline
+  (`packer fmt`/`packer validate`, mirroring `validate.yml`), then **opens a PR
+  and auto-merges it with `GITHUB_TOKEN` — no human approval gate** (the
+  repository requires 0 approvals / 0 checks), then dispatches `upload-isos` for
+  each bumped line. The PR is required because the org-wide
+  `baseline-main-protection` ruleset blocks direct pushes to `main`; a
+  `GITHUB_TOKEN` PR/merge does **not** retrigger `validate.yml` (recursion
+  carve-out), which is why validate runs inline. Keep it **unattended** — do not
+  add an approval/review gate.
 - **`upload-isos.yml`** — dispatch-only; downloads/verifies/uploads ISOs to the
   datastore from the self-hosted runner (`ci/scripts/upload-isos.sh`).
 - **`validate.yml`** — `packer fmt -check` + `packer validate` (all matrix lines)

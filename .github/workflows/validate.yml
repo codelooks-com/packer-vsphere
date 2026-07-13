@@ -10,8 +10,9 @@ on:
       - project.json
       - .github/workflows/validate.yml
       - ci/matrix.json
-  # check-iso-updates commits ISO bumps straight to main (no PR), so also
-  # validate on push to main to keep packer validate covering those bumps.
+  # Safety net for any direct push to main (e.g. an org-admin ruleset bypass).
+  # ISO bumps now go through check-iso-updates' own PR and validate inline
+  # there — a GITHUB_TOKEN merge does not retrigger this workflow.
   push:
     branches: [main]
     paths:
