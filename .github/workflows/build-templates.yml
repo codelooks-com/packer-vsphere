@@ -94,6 +94,24 @@ jobs:
         with:
           persist-credentials: false
 
+      # Ansible's WinRM connection plugin imports pywinrm on the control node
+      # (this runner) using ansible's OWN interpreter. If it's missing, the build
+      # fails ~7 min into provisioning with a cryptic "No module named 'winrm'"
+      # (Linux uses SSH — unaffected). Assert it up front, via the same venv
+      # python ansible runs under, so a bad runner image fails in seconds with a
+      # clear message instead of deep in a Packer/Ansible trace. See
+      # runner/Dockerfile (pywinrm install) and docs/docs/operations/windows.md.
+      - name: Preflight WinRM control-node deps (Windows only)
+        if: matrix.os == 'Windows'
+        run: |
+          set -euo pipefail
+          py="$(dirname "$(dirname "$(mise which ansible)")")/bin/python"
+          if ! "${py}" -c "import winrm" 2>/dev/null; then
+            echo "::error::pywinrm not importable by ansible (${py}). The packer-runner image is missing the Windows control-node dependency — rebuild it (runner/Dockerfile) and bump the digest in talos-cluster." >&2
+            exit 1
+          fi
+          echo "pywinrm OK (${py})"
+
       - name: Build ${{ matrix.dist }} ${{ matrix.version }}
         env:
           BUILD_OS: ${{ matrix.os }}
@@ -205,3 +223,51 @@ jobs:
           path: packer-build.log
           if-no-files-found: warn
           retention-days: 7
+
+  # Unattended failure alerting. The weekly build is the whole point of this
+  # pipeline and a red scheduled run is otherwise silent — no reviewer, no PR, so
+  # a break can sit unnoticed for weeks (it did: the 2026-06 Windows outage). On
+  # a SCHEDULED failure (plan or any build leg), open — or comment on an existing
+  # — GitHub issue assigned to the maintainer; the assignment emails them. Manual
+  # dispatches are skipped: those are already being watched.
+  notify:
+    needs: [plan, build]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      actions: read
+    steps:
+      - name: Open or update the build-failure issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # The run is still in progress (this job is running), but the build
+          # legs have already reported their conclusions.
+          failed="$(gh run view "${GITHUB_RUN_ID}" -R "${GITHUB_REPOSITORY}" \
+            --json jobs \
+            --jq '[.jobs[] | select(.conclusion == "failure") | .name] | join(", ")')"
+          [ -n "${failed}" ] || failed="(see run for details)"
+          body="The scheduled weekly build-templates run failed.
+
+          Failed legs: ${failed}
+          Run: ${RUN_URL}
+
+          Opened automatically; close once the weekly build is green again."
+          # Best-effort label so these are filterable; harmless if it exists.
+          gh label create ci-failure -R "${GITHUB_REPOSITORY}" \
+            --color d73a4a --description "Automated CI failure report" 2>/dev/null || true
+          # Dedup by the ci-failure label: comment on the open issue if one is
+          # already tracking the outage, else open a fresh one and assign it.
+          existing="$(gh issue list -R "${GITHUB_REPOSITORY}" --state open \
+            --label ci-failure --json number --jq '.[0].number // empty')"
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" -R "${GITHUB_REPOSITORY}" --body "${body}"
+            echo "Commented on existing issue #${existing}"
+          else
+            gh issue create -R "${GITHUB_REPOSITORY}" \
+              --title "Weekly template build failed" \
+              --assignee LukeEvansTech --label ci-failure --body "${body}"
+          fi

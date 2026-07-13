@@ -25,7 +25,13 @@ more OSes; the matrix is what we actually build.
   job filters the matrix; a `build` job on the self-hosted `packer-vsphere` ARC
   runner runs `build.sh --ci` → `packer vsphere-iso` → Ansible → converts the VM
   to `<base>-build` → **promote** renames it to the stable `<base>` Terraform
-  clones and rolls the prior generation to `<base>-prev` (success-only).
+  clones and rolls the prior generation to `<base>-prev` (success-only). Windows
+  legs run a **preflight** that asserts Ansible can import `winrm` before Packer
+  starts — it fails fast when the runner image is missing the control-node
+  pywinrm dependency (the 2026-06 outage) instead of ~7 min into provisioning. A
+  `notify` job opens (or comments on) a `ci-failure` GitHub issue assigned to the
+  maintainer on **scheduled** failures — the assignment emails an alert; manual
+  dispatches are exempt.
 - **`check-iso-updates.yml`** — weekly (Mon 06:00 UTC). `ci/scripts/check_iso_updates.py`
   detects new Linux point releases; the workflow validates the bump inline
   (`packer fmt`/`packer validate`, mirroring `validate.yml`), then **opens a PR

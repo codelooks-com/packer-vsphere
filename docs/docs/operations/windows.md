@@ -38,12 +38,23 @@ doesn't re-discover them.
    screen forever, surfacing as *"timeout waiting for IP"*. Set it in each
    `ci/config/windows-*.pkrvars.hcl`.
 
-2. **The runner image must be pinned to an immutable digest.** pywinrm is
-   pip-installed into Ansible's venv as a post-`mise install` Docker layer. With
-   a mutable `:latest` tag and no `imagePullPolicy`, ARC nodes can run a *stale
-   cached* image whose venv lacks pywinrm → Ansible fails with
-   *"No module named 'winrm'"*. The image is digest-pinned in the talos-cluster
-   helmrelease.
+2. **pywinrm on the control node — a pinned digest is necessary but not
+   sufficient.** pywinrm is pip-installed into Ansible's own venv as a
+   post-`mise install` Docker layer; Ansible's WinRM connection plugin imports it
+   at runtime. If it is missing, every Windows leg fails ~7 min in with *"No
+   module named 'winrm'"* (Linux uses SSH — unaffected). There are two
+   independent ways it goes missing, each with its own defense:
+   - **Stale cache** — a mutable `:latest` with no `imagePullPolicy` lets ARC
+     nodes run an old image whose venv lacks pywinrm. Fixed by digest-pinning the
+     image in the talos-cluster helmrelease.
+   - **A pinned-but-broken image** — the 2026-06 outage: the pinned image *itself*
+     lacked a working pywinrm (a `mise`/pipx venv reshuffle orphaned the graft),
+     so the pin faithfully served a broken image and all Windows builds were red
+     for two weeks. Now guarded by (a) installing pywinrm via the venv's own
+     `python` in `runner/Dockerfile` (robust against shim/shebang drift) and
+     (b) a **Preflight** step in `build-templates.yml` that imports `winrm`
+     through Ansible's real interpreter before Packer starts — failing in seconds
+     with a clear message instead of deep in a provisioning trace.
 
 3. **`ansible_shell_type: cmd`** (set in `ansible/windows-playbook.yml`).
    ansible-core 2.21 + pywinrm 0.5 default the WinRM shell to `powershell`, which
