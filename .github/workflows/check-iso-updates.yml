@@ -1,15 +1,24 @@
 ---
 name: check-iso-updates
 
-# Weekly point-release detector for the free Linux distros. Commits a bump
-# of iso_url/sums_url (ci/matrix.json) + iso_file (ci/config) straight to
-# main — no PR, no approval gate — then dispatches upload-isos for each
-# bumped line so the next weekly build finds the new ISO on the datastore.
+# Weekly point-release detector for the free Linux distros. Detects a bump of
+# iso_url/sums_url (ci/matrix.json) + iso_file (ci/config), validates the change
+# inline with `packer validate`, then opens a PR and auto-merges it — after
+# which it dispatches upload-isos for each bumped line so the next weekly build
+# finds the new ISO on the datastore.
 #
-# validate.yml runs packer validate on push to main, so the bump is still
-# checked (post-merge). GITHUB_TOKEN can trigger the upload-isos
-# workflow_dispatch (the documented carve-out from the recursion rule that
-# blocks push/pull_request chains), so no PAT is required.
+# Why a PR (this used to push straight to main): the org-wide
+# baseline-main-protection ruleset now requires every change to main to go
+# through a PR. The workflow opens and merges its OWN PR with GITHUB_TOKEN — the
+# repo requires 0 approvals and 0 status checks, so the merge is unattended (no
+# human gate, preserving the low-friction intent of the original direct push).
+#
+# Inline validate is deliberate: a GITHUB_TOKEN-created PR (and the resulting
+# merge commit) does NOT trigger `on: pull_request` / `on: push` workflows (the
+# recursion carve-out), so validate.yml will NOT run for this bump. We therefore
+# run `packer fmt`/`packer validate` here, BEFORE pushing, mirroring validate.yml
+# so a bad bump fails the job without ever opening a PR. (`gh workflow run` for
+# upload-isos still fires — workflow_dispatch is the documented carve-out.)
 on:
   schedule:
     # Monday 06:00 UTC — bumps land before the Saturday rebuild.
@@ -18,49 +27,137 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
   actions: write
 
 concurrency:
   group: check-iso-updates
   cancel-in-progress: false
 
+# Dummy credentials only: packer validate never contacts vCenter. Mirrors
+# validate.yml's env block — keep the two in sync (validate.yml is the source of
+# truth for how the matrix lines are validated).
+env:
+  PKR_VAR_vsphere_endpoint: vc.example.com
+  PKR_VAR_vsphere_username: dummy@example.com
+  PKR_VAR_vsphere_password: dummy
+  PKR_VAR_vsphere_insecure_connection: "true"
+  PKR_VAR_vsphere_cluster: vSAN Cluster
+  PKR_VAR_vsphere_datastore: vsanDatastore
+  PKR_VAR_vsphere_network: VM Network
+  PKR_VAR_build_password: dummy
+  PKR_VAR_build_password_encrypted: $6$dummy$dummy
+  PKR_VAR_build_key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDummyDummyDummyDummyDummyDummyDummyDummy dummy
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      # persist-credentials stays default-true: the push below needs it.
+      # persist-credentials stays default-true: the branch push below needs it.
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Detect point releases
-        # Tee the BUMP/OK lines to a file so the next step can map each
-        # bumped matrix key to an upload-isos dispatch.
-        run: python3 ci/scripts/check_iso_updates.py | tee "$RUNNER_TEMP/iso-bumps.log"
+        id: detect
+        # Tee the BUMP/OK lines to a file so a later step can map each bumped
+        # matrix key to an upload-isos dispatch. check_iso_updates.py edits the
+        # working tree in place; git diff tells us whether anything changed.
+        run: |
+          set -euo pipefail
+          python3 ci/scripts/check_iso_updates.py | tee "${RUNNER_TEMP}/iso-bumps.log"
+          if git diff --quiet; then
+            echo "No ISO bumps."
+            echo "has_bumps=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "has_bumps=true" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: Commit bumps to main and stage ISOs
+      - name: Setup Packer
+        if: steps.detect.outputs.has_bumps == 'true'
+        uses: hashicorp/setup-packer@ce93c3c08a6c2ff2275bf4b54ff0d9a75f6c9789 # v3.4.0
+        with:
+          version: "1.15.4"
+
+      - name: Packer validate the bump
+        if: steps.detect.outputs.has_bumps == 'true'
+        # Validates the working-tree bump before any branch/PR exists, so a bad
+        # bump fails the job cleanly. Mirrors validate.yml (keep in sync).
+        run: |
+          set -euo pipefail
+          # Fail closed: a malformed matrix or zero entries must fail the check,
+          # not silently validate nothing (process substitution discards jq's
+          # exit status).
+          jq -e 'type=="array" and length > 0' ci/matrix.json >/dev/null
+          packer fmt -check -recursive ci/config
+          while IFS= read -r dir; do
+            packer fmt -check -recursive "${dir}"
+          done < <(jq -r '.[] | .build_dir' ci/matrix.json)
+          while IFS=$'\t' read -r dir cfg; do
+            echo "::group::validate ${dir}"
+            packer init "${dir}"
+            case "${dir}" in
+              builds/windows/*)
+                # Windows declares no network/storage variables — passing the
+                # Linux var-files would fail with undefined-variable errors.
+                packer validate \
+                  -var-file=ci/config/vsphere.pkrvars.hcl \
+                  -var-file=ci/config/build.pkrvars.hcl \
+                  -var-file=ci/config/ansible.pkrvars.hcl \
+                  -var-file=ci/config/proxy.pkrvars.hcl \
+                  -var-file=ci/config/common.pkrvars.hcl \
+                  -var-file="ci/config/${cfg}" \
+                  "${dir}"
+                ;;
+              *)
+                packer validate \
+                  -var-file=ci/config/vsphere.pkrvars.hcl \
+                  -var-file=ci/config/build.pkrvars.hcl \
+                  -var-file=ci/config/ansible.pkrvars.hcl \
+                  -var-file=ci/config/proxy.pkrvars.hcl \
+                  -var-file=ci/config/common.pkrvars.hcl \
+                  -var-file=ci/config/network.pkrvars.hcl \
+                  -var-file=ci/config/linux-storage.pkrvars.hcl \
+                  -var-file="ci/config/${cfg}" \
+                  "${dir}"
+                ;;
+            esac
+            echo "::endgroup::"
+          done < <(jq -r '.[] | [.build_dir, .config] | @tsv' ci/matrix.json)
+
+      - name: Open PR, merge, and stage ISOs
+        if: steps.detect.outputs.has_bumps == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if git diff --quiet; then
-            echo "No ISO bumps."
-            exit 0
-          fi
+          branch="iso-bump-${GITHUB_RUN_ID}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "${branch}"
           git add ci/matrix.json ci/config/*.pkrvars.hcl
           git commit -m "chore(iso): bump ISO point releases"
-          # Push straight to the default branch — ISO point-release bumps are
-          # low-risk and run no approval gate. validate.yml re-runs packer
-          # validate on the resulting push to main. Runs are serialised by the
-          # concurrency group above, so a non-fast-forward race is unlikely;
-          # if it happens the next scheduled run (or a manual dispatch) recovers.
-          git push origin HEAD:main
+          git push origin "${branch}"
+          body=$'Automated Linux ISO point-release bump.\n\nValidated inline by check-iso-updates (packer fmt/validate) before merge — validate.yml does not run on GITHUB_TOKEN-created PRs.'
+          gh pr create --base main --head "${branch}" \
+            --title "chore(iso): bump ISO point releases" \
+            --body "${body}"
+          # Merge the bot's own PR. baseline-main-protection requires a PR but 0
+          # approvals / 0 required checks on this repo, so the merge is
+          # unattended. GitHub computes mergeability asynchronously after create,
+          # so poll briefly before merging (auto-merge is disabled at the repo
+          # level, so --auto is unavailable).
+          for _ in $(seq 1 12); do
+            state="$(gh pr view "${branch}" --json mergeable --jq '.mergeable')"
+            [ "${state}" = "MERGEABLE" ] && break
+            echo "PR not mergeable yet (${state}); waiting…"
+            sleep 5
+          done
+          gh pr merge "${branch}" --squash --delete-branch
           # Stage the freshly bumped ISOs on the datastore so the next weekly
           # build finds them. upload-isos takes one matrix key per dispatch and
           # its keys mirror the matrix keys printed as "BUMP <key>: ...".
-          keys=$(awk '/^BUMP /{k=$2; sub(/:$/, "", k); print k}' "$RUNNER_TEMP/iso-bumps.log")
-          for key in $keys; do
-            echo "Dispatching upload-isos for $key"
-            gh workflow run upload-isos.yml --repo "${{ github.repository }}" -f os="$key"
-          done
+          while IFS= read -r key; do
+            [ -n "${key}" ] || continue
+            echo "Dispatching upload-isos for ${key}"
+            gh workflow run upload-isos.yml --repo "${GITHUB_REPOSITORY}" -f os="${key}"
+          done < <(awk '/^BUMP /{k=$2; sub(/:$/, "", k); print k}' "${RUNNER_TEMP}/iso-bumps.log")
