@@ -21,5 +21,5 @@ vm_network_device = "auto"
 
 // Removable Media Settings
 iso_datastore_path       = "iso/linux/debian/13/amd64"
-iso_content_library_item = "debian-13.5.0-amd64-netinst"
-iso_file                 = "debian-13.5.0-amd64-netinst.iso"
+iso_content_library_item = "debian-13.6.0-amd64-netinst"
+iso_file                 = "debian-13.6.0-amd64-netinst.iso"
