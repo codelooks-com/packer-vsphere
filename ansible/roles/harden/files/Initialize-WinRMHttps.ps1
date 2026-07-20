@@ -101,6 +101,10 @@ function Test-ListenerCurrent {
 }
 
 function Set-HttpsListener {
+    # Internal helper, always called without -WhatIf. ShouldProcess plumbing
+    # would add a -WhatIf no-op path to a boot script for no benefit.
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '')]
     param(
         [string[]]$DnsName,
         [int]$ListenerPort,
@@ -141,6 +145,9 @@ function Set-HttpsListener {
 }
 
 function Set-FirewallRule {
+    # See Set-HttpsListener: internal helper, no -WhatIf path needed.
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '')]
     param([int]$ListenerPort)
 
     $name = 'WINRM-HTTPS-In-TCP'
@@ -155,6 +162,11 @@ function Set-FirewallRule {
 }
 
 function Remove-HttpListener {
+    # See Set-HttpsListener: internal helper, no -WhatIf path needed.
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+        'PSUseShouldProcessForStateChangingFunctions', '')]
+    param()
+
     $http = Get-ChildItem -Path WSMan:\localhost\Listener -ErrorAction SilentlyContinue |
         Where-Object { $_.Keys -contains 'Transport=HTTP' }
     if (-not $http) { return }
