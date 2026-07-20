@@ -1,0 +1,42 @@
+---
+# Fleet-wide security baseline — tunables.
+#
+# These are defaults (not vars) so a per-line pkrvars or an --extra-vars can
+# override them without editing the role.
+
+# --- PowerShell 7 -----------------------------------------------------------
+# Windows Server 2025 and Windows 11 still ship Windows PowerShell 5.1 only.
+# Modern tooling increasingly requires 7+ (e.g. Veeam 13's PowerShell module).
+#
+# Version and checksum are a matched pair — bump BOTH together. Get the hash
+# with:
+#   curl -sLO https://github.com/PowerShell/PowerShell/releases/download/v<X>/PowerShell-<X>-win-x64.msi
+#   sha256sum PowerShell-<X>-win-x64.msi
+harden_powershell_version: 7.6.3
+harden_powershell_msi_sha256: 4f574fddb567f4d0756094424a1e4e2b2bbdde21de9f0965c0f988d24dc658e4
+
+harden_powershell_msi_url: >-
+  https://github.com/PowerShell/PowerShell/releases/download/v{{ harden_powershell_version }}/PowerShell-{{ harden_powershell_version }}-win-x64.msi
+harden_powershell_msi_path: 'C:\Windows\Temp\PowerShell-{{ harden_powershell_version }}-win-x64.msi'
+harden_powershell_exe: 'C:\Program Files\PowerShell\7\pwsh.exe'
+
+# --- WinRM over HTTPS -------------------------------------------------------
+harden_winrm_https_port: 5986
+
+# Certificate lifetime, and how close to expiry the first-boot script renews.
+harden_winrm_cert_validity_years: 2
+harden_winrm_cert_renew_within_days: 30
+
+# Tear down the plaintext 5985 listener at first boot, once HTTPS is up.
+#
+# Left FALSE deliberately. Packer's own provisioning — including the Ansible
+# run that installs this very script — connects over 5985, and vSphere guest
+# customisation may re-run WinRM configuration on clone. Disabling plaintext is
+# a deploy-time decision for per-VM Ansible, not something to bake into a
+# template that every Windows VM in the fleet is cloned from.
+#
+# Flip to true only once you have confirmed every consumer speaks HTTPS.
+harden_winrm_disable_http_listener: false
+
+# Where template-owned scripts and their logs live on the guest.
+harden_script_dir: 'C:\ProgramData\PackerTemplate'

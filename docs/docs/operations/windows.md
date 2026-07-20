@@ -18,13 +18,108 @@ expensive to find.
   comes from the ESXi product locker (`[] /vmimages/tools-isoimages/windows.iso`)
   — no staging.
 - **WinRM 5985** is the Ansible connection; `win_updates` applies Security +
-  Critical updates.
+  Critical updates. Templates additionally ship an HTTPS listener on 5986 — see
+  [Security baseline](#security-baseline).
 - **vTPM.** `windows-desktop-11` ships `vm_vtpm = true` → the VM gets a Virtual
   TPM, which requires a vCenter **Native Key Provider** (present; check with
   `govc kms.ls`).
 - **`--only` filter.** Datacenter would otherwise build the `dexp` and `core`
   sources together; the matrix `only` field restricts each build to the
   Desktop-Experience source.
+
+## Security baseline
+
+`ansible/roles/harden` carries what *every* Windows machine in the fleet should
+have. It is a separate role on purpose: `base`, `configure`, `clean` and `users`
+are vendored from upstream, so keeping our additions out of them means an
+upstream sync has nothing to conflict with.
+
+**The scope boundary matters.** Application software must not go into a
+template. Templates rebuild weekly, and a stateful application with databases,
+licences and configuration cannot be meaningfully baked into a golden image.
+The template hands over a correctly-configured, hardened OS; anything that makes
+one box a particular application server belongs in that VM's own repository
+(`LukeEvansTech/veeam-config` is the reference pattern).
+
+| Layer | Scope | Lives in |
+| --- | --- | --- |
+| Template Ansible (bake time) | What every Windows Server should have | this repo, `ansible/roles/harden` |
+| Per-VM Ansible (deploy time) | What makes one box an application server | e.g. `LukeEvansTech/veeam-config` |
+
+### WinRM over HTTPS
+
+Templates previously shipped a 5985 (HTTP) listener only, so every cloned VM
+carried credentials and remote-management traffic across the LAN in plaintext.
+
+The listener **cannot be baked into the template**. A certificate generated
+during the build would carry the *build VM's* name, and every clone is renamed
+by vSphere guest customisation — so the certificate would be wrong on all of
+them, and every VM in the fleet would share one private key.
+
+Instead the template ships `C:\ProgramData\PackerTemplate\Initialize-WinRMHttps.ps1`
+and an `Initialize-WinRMHttps` scheduled task. The script:
+
+- runs **at boot** (60s delay) and **daily at 03:00**;
+- is idempotent — a no-op once the listener's certificate covers the current
+  hostname and is outside the 30-day renewal window;
+- regenerates the certificate when the machine is renamed, which is exactly what
+  guest customisation does on first clone;
+- deletes only certificates it created (matched on friendly name), so an
+  operator- or application-installed certificate is never touched;
+- **exits 0 unconditionally.** It runs at boot; a hardening step must never
+  block a machine from starting. Failures land in
+  `C:\ProgramData\PackerTemplate\Initialize-WinRMHttps.log`.
+
+The build runs it once so a broken script fails in the Packer log rather than
+silently leaving every future clone without HTTPS, and the Ansible run then
+asserts the listener actually exists.
+
+**5985 is deliberately left enabled.** Packer's own provisioning — including the
+Ansible run that installs this script — connects over it, so removing it during
+the build would break the build itself. Disabling plaintext is a deploy-time
+decision, not one to bake into the template every Windows VM is cloned from. The
+lever exists when you want it:
+
+```yaml
+harden_winrm_disable_http_listener: true
+```
+
+The script refuses to remove the HTTP listener unless an HTTPS listener is
+actually present, so flipping this cannot lock a machine out of remote
+management.
+
+### PowerShell 7
+
+Windows ships Windows PowerShell 5.1 only, and modern tooling increasingly
+assumes 7+ (Veeam 13's PowerShell module is the case that surfaced this). The
+MSI is installed from the pinned version in `ansible/roles/harden/defaults/main.yml`.
+
+`harden_powershell_version` and `harden_powershell_msi_sha256` are a **matched
+pair — bump both together**, or the checksum check fails the build:
+
+```bash
+curl -sLO https://github.com/PowerShell/PowerShell/releases/download/v<X>/PowerShell-<X>-win-x64.msi
+sha256sum PowerShell-<X>-win-x64.msi
+```
+
+Renovate does not track this pin (it is a plain Ansible var, not a manifest
+entry), so it is a manual bump.
+
+### Verifying on a clone
+
+```powershell
+Test-NetConnection <vm> -Port 5986
+Get-ChildItem WSMan:\localhost\Listener          # on the guest
+& 'C:\Program Files\PowerShell\7\pwsh.exe' -Version
+```
+
+The certificate is self-signed, so a remote session needs to skip CA
+validation:
+
+```powershell
+$so = New-PSSessionOption -SkipCACheck
+Enter-PSSession -ComputerName <vm> -UseSSL -SessionOption $so -Credential (Get-Credential)
+```
 
 ## Gotchas (in the order they bite)
 
