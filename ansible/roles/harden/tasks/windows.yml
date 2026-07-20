@@ -1,0 +1,164 @@
+---
+# Fleet-wide security baseline for Microsoft Windows templates.
+#
+# SCOPE BOUNDARY — read before adding to this file.
+#
+#   This role carries what EVERY Windows machine in the fleet should have.
+#   Application software does NOT belong here: templates rebuild weekly, and a
+#   stateful application with databases, licences and configuration cannot be
+#   meaningfully baked into a golden image. Per-VM concerns live in that VM's
+#   own repository (see LukeEvansTech/veeam-config for the pattern).
+#
+#   The template's job is to hand over a correctly-configured, hardened OS.
+
+# --- PowerShell 7 -----------------------------------------------------------
+# Windows ships Windows PowerShell 5.1 only. Modern tooling increasingly
+# assumes 7+ (Veeam 13's PowerShell module is the case that surfaced this), so
+# it belongs in the template rather than being installed per-VM.
+- name: Installing PowerShell 7...
+  block:
+    - name: Downloading the PowerShell 7 installer.
+      ansible.windows.win_get_url:
+        url: "{{ harden_powershell_msi_url }}"
+        dest: "{{ harden_powershell_msi_path }}"
+        checksum: "{{ harden_powershell_msi_sha256 }}"
+        checksum_algorithm: sha256
+
+    - name: Installing PowerShell 7.
+      ansible.windows.win_package:
+        path: "{{ harden_powershell_msi_path }}"
+        arguments: /quiet /norestart
+        state: present
+
+    - name: Removing the PowerShell installer.
+      ansible.windows.win_file:
+        path: "{{ harden_powershell_msi_path }}"
+        state: absent
+
+    - name: Verifying PowerShell 7 is present.
+      ansible.windows.win_command: '"{{ harden_powershell_exe }}" -Version'
+      register: harden_powershell_check
+      changed_when: false
+
+    - name: Reporting the installed PowerShell version.
+      ansible.builtin.debug:
+        msg: "{{ harden_powershell_check.stdout | trim }}"
+
+# --- WinRM over HTTPS -------------------------------------------------------
+# Templates historically shipped with a 5985 (HTTP) listener only, so every
+# cloned VM carried remote-management traffic across the LAN in plaintext.
+#
+# The listener cannot simply be created here and baked in: the certificate
+# would carry the TEMPLATE's hostname, and every clone is renamed by vSphere
+# guest customisation. So the template carries a script and a scheduled task,
+# and each machine generates its own certificate on first boot.
+- name: Configuring WinRM over HTTPS...
+  block:
+    - name: Creating the template script directory.
+      ansible.windows.win_file:
+        path: "{{ harden_script_dir }}"
+        state: directory
+
+    - name: Deploying the WinRM HTTPS bootstrap script.
+      ansible.windows.win_copy:
+        src: Initialize-WinRMHttps.ps1
+        dest: "{{ harden_script_dir }}\\Initialize-WinRMHttps.ps1"
+
+    - name: Registering the WinRM HTTPS scheduled task.
+      ansible.windows.win_powershell:
+        parameters:
+          ScriptPath: "{{ harden_script_dir }}\\Initialize-WinRMHttps.ps1"
+          Port: "{{ harden_winrm_https_port }}"
+          ValidityYears: "{{ harden_winrm_cert_validity_years }}"
+          RenewWithinDays: "{{ harden_winrm_cert_renew_within_days }}"
+          DisableHttp: "{{ harden_winrm_disable_http_listener }}"
+        script: |
+          param([string]$ScriptPath, [int]$Port, [int]$ValidityYears,
+                [int]$RenewWithinDays, [bool]$DisableHttp)
+
+          $ErrorActionPreference = 'Stop'
+
+          $argLine = '-NoProfile -NonInteractive -ExecutionPolicy Bypass ' +
+                     ('-File "{0}" -Port {1} -CertValidityYears {2} -RenewWithinDays {3}' -f
+                        $ScriptPath, $Port, $ValidityYears, $RenewWithinDays)
+          if ($DisableHttp) { $argLine += ' -DisableHttpListener' }
+
+          $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $argLine
+
+          # At boot, because guest customisation renames the clone and the
+          # certificate must follow the new name. Daily as a safety net so a
+          # long-uptime machine still renews before the certificate expires.
+          $atStartup = New-ScheduledTaskTrigger -AtStartup
+          $atStartup.Delay = 'PT1M'
+          $daily = New-ScheduledTaskTrigger -Daily -At '03:00'
+
+          $principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' `
+              -LogonType ServiceAccount -RunLevel Highest
+          $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
+              -DontStopOnIdleEnd -MultipleInstances IgnoreNew `
+              -ExecutionTimeLimit (New-TimeSpan -Minutes 10)
+
+          $description = 'Ensures a WinRM HTTPS listener with a certificate ' +
+                         'matching this machine name. Installed by the Packer ' +
+                         'template security baseline.'
+
+          Register-ScheduledTask -TaskName 'Initialize-WinRMHttps' `
+              -Action $action -Trigger $atStartup, $daily `
+              -Principal $principal -Settings $settings -Force `
+              -Description $description | Out-Null
+
+          $Ansible.Changed = $true
+
+    # Run it once during the build. This is the fail-fast check: if the script
+    # is broken it surfaces here, in the Packer log, rather than silently
+    # leaving every future clone without an HTTPS listener. The certificate it
+    # creates carries the build VM's name and is replaced on first boot.
+    - name: Running the WinRM HTTPS bootstrap for the first time.
+      ansible.windows.win_command: >-
+        powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass
+        -File "{{ harden_script_dir }}\Initialize-WinRMHttps.ps1"
+        -Port {{ harden_winrm_https_port }}
+        -CertValidityYears {{ harden_winrm_cert_validity_years }}
+        -RenewWithinDays {{ harden_winrm_cert_renew_within_days }}
+      register: harden_winrm_bootstrap
+      changed_when: true
+
+    - name: Reporting the bootstrap result.
+      ansible.builtin.debug:
+        var: harden_winrm_bootstrap.stdout_lines
+
+    # The script exits 0 unconditionally so it can never block a boot, which
+    # means its exit code proves nothing. Assert on the listener itself.
+    #
+    # win_powershell (not win_shell) deliberately: the playbook sets
+    # ansible_shell_type=cmd to work around a WinRM encoding bug, so win_shell
+    # would run this through cmd and fail on the PowerShell syntax.
+    - name: Verifying the HTTPS listener is present.
+      ansible.windows.win_powershell:
+        parameters:
+          ExpectedPort: "{{ harden_winrm_https_port }}"
+        script: |
+          param([int]$ExpectedPort)
+          $ErrorActionPreference = 'Stop'
+
+          $listener = Get-ChildItem WSMan:\localhost\Listener |
+            Where-Object { $_.Keys -contains 'Transport=HTTPS' }
+          if (-not $listener) { throw 'No WinRM HTTPS listener was created.' }
+
+          $port = (Get-ChildItem "WSMan:\localhost\Listener\$($listener.Name)" |
+            Where-Object { $_.Name -eq 'Port' }).Value
+          if ([int]$port -ne $ExpectedPort) {
+            throw "HTTPS listener is on port $port, expected $ExpectedPort."
+          }
+
+          $thumb = (Get-ChildItem "WSMan:\localhost\Listener\$($listener.Name)" |
+            Where-Object { $_.Name -eq 'CertificateThumbprint' }).Value
+          $cert = Get-Item "Cert:\LocalMachine\My\$($thumb -replace '\s', '')"
+          "HTTPS listener on $port using certificate $($cert.Subject), valid until $($cert.NotAfter)."
+
+          $Ansible.Changed = $false
+      register: harden_winrm_listener
+
+    - name: Reporting the listener state.
+      ansible.builtin.debug:
+        var: harden_winrm_listener.output

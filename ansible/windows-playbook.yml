@@ -21,3 +21,8 @@
   roles:
     - base
     - configure
+    # Fleet-wide security baseline (WinRM HTTPS, PowerShell 7). Kept as its own
+    # role rather than folded into 'configure': base/configure/clean/users are
+    # vendored from upstream, and keeping our additions in a separate role means
+    # an upstream sync has nothing to conflict with.
+    - harden
