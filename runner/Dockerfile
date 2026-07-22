@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 # Base on the same ARC runner image the cluster already runs.
 # Renovate manages this digest.
-FROM ghcr.io/home-operations/actions-runner:2.335.1@sha256:0c6f38e8194f6c3714aa86c6dc8a72574484818ed625dd66074920b25c118508
+FROM ghcr.io/home-operations/actions-runner:2.336.0@sha256:281a9a090522fafbf4967f158b8c97d03552b1978b688893c5f7cb1944bc5fe5
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
