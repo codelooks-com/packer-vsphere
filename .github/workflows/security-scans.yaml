@@ -20,7 +20,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
-    uses: LukeEvansTech/shared-workflows/.github/workflows/security-scans.yml@3454940093a684ceb6be3b42cac3a0d219ae78cb # v1
+    uses: LukeEvansTech/shared-workflows/.github/workflows/security-scans.yml@b5df3b10c4b9933574902f7715a4e3af9cbdd56e # v1
     with:
       # Packer/HCL repo: scan the runner Dockerfile and CI workflows, not k8s/helm.
       checkov-frameworks: dockerfile,github_actions
