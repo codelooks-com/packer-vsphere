@@ -11,6 +11,37 @@
 #
 #   The template's job is to hand over a correctly-configured, hardened OS.
 
+# --- Clonability: the OS volume must not be encrypted ------------------------
+# Windows 11 24H2+ auto-encrypts the OS volume with BitLocker during OOBE on any
+# machine with a TPM and Secure Boot, and sysprep refuses an encrypted volume
+# (SYSPRP BitLocker-Sysprep 0x80310039). The symptom is remote and slow: every
+# vSphere guest customization of a clone hangs until the provider's timeout
+# taints the Terraform resource. The Windows 11 autounattend sets
+# PreventDeviceEncryption before OOBE; this task turns a regression into a
+# failed build with the cause in the Packer log.
+#
+# Client editions only: Server has no automatic device encryption and does not
+# ship the BitLocker PowerShell module by default.
+- name: Verifying the OS volume is not BitLocker-encrypted (sysprep refuses an encrypted volume)...
+  when: ansible_facts['os_installation_type'] == "Client"
+  ansible.windows.win_powershell:
+    script: |
+      $ErrorActionPreference = 'Stop'
+      $Ansible.Changed = $false
+      $volume = Get-BitLockerVolume -MountPoint C:
+      if ($volume.VolumeStatus -ne 'FullyDecrypted') {
+        throw ("C: is {0} ({1}% encrypted, protection {2}). Guest customization of every clone " +
+               "would time out; check PreventDeviceEncryption in the autounattend.") -f
+               $volume.VolumeStatus, $volume.EncryptionPercentage, $volume.ProtectionStatus
+      }
+      "C: is {0}, protection {1}." -f $volume.VolumeStatus, $volume.ProtectionStatus
+  register: harden_bitlocker_check
+
+- name: Reporting the OS volume encryption state.
+  when: harden_bitlocker_check is not skipped
+  ansible.builtin.debug:
+    var: harden_bitlocker_check.output
+
 # --- PowerShell 7 -----------------------------------------------------------
 # Windows ships Windows PowerShell 5.1 only. Modern tooling increasingly
 # assumes 7+ (Veeam 13's PowerShell module is the case that surfaced this), so

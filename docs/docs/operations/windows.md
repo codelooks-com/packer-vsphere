@@ -171,6 +171,22 @@ doesn't re-discover them.
    are baked into the image, so this is a one-off blip — retry. If it recurs,
    disable the provisioner's redundant galaxy re-download.
 
+7. **Windows 11 encrypts itself during OOBE, and sysprep refuses an encrypted
+   volume.** Since 24H2, automatic device encryption needs only a TPM and Secure
+   Boot (Modern Standby is no longer required), and the Windows 11 line ships
+   both (`vm_vtpm = true`, `vm_firmware = "efi-secure"`). A clean install therefore
+   leaves `C:` *Used Space Only Encrypted* with a clear key, and sysprep bails
+   with `SYSPRP BitLocker-Sysprep: BitLocker is on for the OS volume (0x80310039)`
+   in `C:\Windows\System32\Sysprep\Panther\setuperr.log`. The symptom is
+   remote: every vSphere guest customization of a clone hangs until the Terraform
+   provider's timeout fires and taints the resource, so the *next* apply destroys
+   and recreates the VM. The Windows 11 autounattend now sets
+   `PreventDeviceEncryption` (unattend component plus the registry value) in the
+   `specialize` pass, before OOBE, and `harden` asserts `Get-BitLockerVolume C:`
+   reports `FullyDecrypted` so a regression fails the build instead of the next
+   clone. Windows 10 still requires Modern Standby for auto-encryption and Server
+   editions have no device encryption, so only the Windows 11 line needed it.
+
 ## Diagnosing a Windows build
 
 The console screenshot is the fastest signal — it reveals a stuck Setup screen
