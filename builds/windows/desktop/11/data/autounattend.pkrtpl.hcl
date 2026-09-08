@@ -143,6 +143,27 @@
       <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
          <SkipAutoActivation>true</SkipAutoActivation>
       </component>
+      <!--
+         Windows 11 24H2+ auto-encrypts the OS volume with BitLocker during OOBE on any
+         machine with a TPM and Secure Boot, which this build has (vm_vtpm, efi-secure).
+         Sysprep refuses an encrypted volume (SYSPRP BitLocker-Sysprep 0x80310039), so
+         vSphere guest customization of every clone hangs until the provider times out.
+         Both documented switches, applied before OOBE:
+         https://learn.microsoft.com/windows-hardware/design/device-experiences/oem-bitlocker#disable-bitlocker-automatic-device-encryption
+         The harden role asserts the volume is FullyDecrypted so a regression fails the build.
+      -->
+      <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-SecureStartup-FilterDriver" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+         <PreventDeviceEncryption>true</PreventDeviceEncryption>
+      </component>
+      <component xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+         <RunSynchronous>
+            <RunSynchronousCommand wcm:action="add">
+               <Order>1</Order>
+               <Description>Prevent BitLocker device encryption so clones can be sysprepped</Description>
+               <Path>reg add HKLM\SYSTEM\CurrentControlSet\Control\BitLocker /v PreventDeviceEncryption /t REG_DWORD /d 1 /f</Path>
+            </RunSynchronousCommand>
+         </RunSynchronous>
+      </component>
    </settings>
    <settings pass="oobeSystem">
       <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
