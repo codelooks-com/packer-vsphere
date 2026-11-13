@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-2
 
 # Use the base Ubuntu devcontainer image.
-FROM mcr.microsoft.com/devcontainers/base:ubuntu@sha256:b1e3b08610ae0b2599f57c3a492eebc93d1d26dbaefb4a0bad0caa7149e4ec95
+FROM mcr.microsoft.com/devcontainers/base:ubuntu@sha256:b377a08d19467bcc08180cb95098448cac31c1a8423e287ce709a9eb09e14762
 
 # Install additional packages.
 
