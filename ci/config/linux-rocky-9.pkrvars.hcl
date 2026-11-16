@@ -22,5 +22,5 @@ vm_network_device = "link"
 
 // Removable Media Settings
 iso_datastore_path       = "iso/linux/rocky-linux/9/amd64"
-iso_content_library_item = "Rocky-9.8-x86_64-dvd"
-iso_file                 = "Rocky-9.8-x86_64-dvd.iso"
+iso_content_library_item = "Rocky-9.9-x86_64-dvd"
+iso_file                 = "Rocky-9.9-x86_64-dvd.iso"

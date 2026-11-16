@@ -19,5 +19,5 @@ vm_network_device = "link"
 
 // Removable Media Settings
 iso_datastore_path       = "iso/linux/almalinux-os/9/amd64"
-iso_content_library_item = "AlmaLinux-9.8-x86_64-dvd"
-iso_file                 = "AlmaLinux-9.8-x86_64-dvd.iso"
+iso_content_library_item = "AlmaLinux-9.9-x86_64-dvd"
+iso_file                 = "AlmaLinux-9.9-x86_64-dvd.iso"
