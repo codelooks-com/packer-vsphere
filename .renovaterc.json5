@@ -9,5 +9,14 @@
       matchPackageNames: ["ghcr.io/codelooks-com/packer-runner"],
       enabled: false,
     },
+    {
+      // ansible-core 2.22 requires Python >= 3.13; the runner image's Python is
+      // older, so `mise install` fails in both the runner-image build and
+      // build-templates. Hold it on 2.21.x until the image's Python is upgraded,
+      // then drop this rule.
+      matchManagers: ["mise"],
+      matchDepNames: ["ansible-core"],
+      allowedVersions: "<2.22",
+    },
   ],
 }
