@@ -17,7 +17,7 @@
 # in-cluster runner image (runner/Dockerfile) — keep them in lockstep.
 
 [tools]
-packer       = "1.16.2"   # >= 1.15.0 required by builds/
+packer       = "1.16.3"   # >= 1.15.0 required by builds/
 # Held below 2.22: ansible-core 2.22 requires Python >= 3.13 and the runner
 # image's Python is older. Renovate is capped to match (.renovaterc.json5).
 ansible-core = "2.21.6"   # >= 2.16 required by builds/
